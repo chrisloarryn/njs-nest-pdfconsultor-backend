@@ -98,6 +98,11 @@ module.exports = {
 		'import/resolver': {
 			typescript: {
 				project: './tsconfig.json',
+				alwaysTryTypes: true,
+			},
+			node: {
+				extensions: ['.js', '.ts', '.d.ts'],
+				caseInsensitive: true,
 			},
 		},
 	},

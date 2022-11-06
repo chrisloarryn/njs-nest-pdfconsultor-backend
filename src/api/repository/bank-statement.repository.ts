@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { from, Observable } from 'rxjs';
 import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 
-import { AcquireBankStatementUrl, BankStatement } from '../entities/bank-statement.entity';
+import { AcquireBankStatementUrl, BankStatement } from '../modules/bank-statement/entities';
 
 @Injectable()
 export class BankStatementRepository {

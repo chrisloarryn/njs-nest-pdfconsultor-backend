@@ -3,7 +3,8 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
-import { HttpExceptionFilter } from './api/exceptions/http-exceptions.filter';
+import { HttpExceptionFilter } from '@ccla/api/core/http-exceptions/http-exceptions.filter';
+
 import { AppModule } from './app.module';
 import { LoggerConfig } from './config';
 

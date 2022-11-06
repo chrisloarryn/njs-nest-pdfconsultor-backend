@@ -1,84 +1,86 @@
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { UserRepository } from '../src/api/repository'
-import { UserController } from '../src/api/controller';
-import { UserService } from '../src/api/service';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { WinstonModule } from 'nest-winston';
-import { LoggerConfig, } from '../src/config';
+import { from, last, map, Observable, toArray } from 'rxjs';
+import request from 'supertest';
+
+import { parseStrToBase64 } from 'src/api/common/utils/b64.utils';
+import { BankStatementController } from 'src/api/modules/bank-statement/bank-statement.controller';
+import { AcquireBankStatementUrl, AcquireWithBase64, BankStatement } from 'src/api/modules/bank-statement/entities/bank-statement.entity';
+
+import { BankStatementRepository } from '../src/api/repository';
+import { LoggerConfig } from '../src/config';
 
 const logger: LoggerConfig = new LoggerConfig();
 
+const isEven = (n: number) => n % 2 === 0;
+
+const makeBankStatement = (i: number): AcquireWithBase64 | AcquireBankStatementUrl => {
+	const url = `car_url${i}`;
+	if (isEven(i)) {
+		//
+		const b64 = parseStrToBase64(url);
+		const bankStatement = new AcquireWithBase64();
+		bankStatement.base64 = b64;
+		bankStatement.car_url = url;
+		bankStatement.car_folio = `car_folio${i}`;
+		bankStatement.prc_id = i;
+		bankStatement.prd_id = `prd_id${i}`;
+		return plainToInstance(AcquireWithBase64, instanceToPlain(bankStatement));
+	}
+
+	const bankStatement = new AcquireBankStatementUrl();
+	bankStatement.car_url = `car_url${i}`;
+	bankStatement.car_folio = `car_folio${i}`;
+	bankStatement.prc_id = i;
+	bankStatement.prd_id = `prd_id${i}`;
+	return plainToInstance(AcquireBankStatementUrl, instanceToPlain(bankStatement));
+};
+
+const randomBSByQuantity = (quantity: number): Observable<AcquireWithBase64[] | AcquireBankStatementUrl[]> =>
+	from(Array(quantity).keys()).pipe(
+		map((i) => makeBankStatement(i + 1)),
+		toArray(),
+	);
+
 describe('Test (e2e)', () => {
-  let app: INestApplication;
-  const mockUser = [
-    {
-      id: 1,
-      name: 'test1',
-      lastname: 'the-brand-1',
-      email: 'the-category-1',
-    },
-    {
-      id: 2,
-      name: 'testing',
-      lastname: 'the-brand-1',
-      email: 'the-category-1',
-    },
-  ]
-  const mockUserRepository = {
-    getAllUsers: jest.fn().mockImplementation(() => Promise.resolve(mockUser)),
-    saveUser: jest.fn().mockImplementation((dto) => {
-      return {
-        id: Math.random() * (1000 - 1) + 1,
-        ...dto,
-      };
-    }),
-    updateUser: jest.fn().mockImplementation((newUser) => { Promise.resolve(newUser) })
-  };
+	let app: INestApplication;
+	let mockBankStatement: BankStatement;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [WinstonModule.forRoot(logger.console())],
-      controllers: [UserController],
-      providers: [UserService, UserRepository],
-    }).overrideProvider(UserRepository)
-      .useValue(mockUserRepository)
-      .compile();
+	beforeEach(async () => {
+		const mockBankStatement = randomBSByQuantity(7);
+		const mockBankStatementRepository = {
+			getBankStatementUrlByProcessIdAndFolio: jest.fn().mockImplementation((pid: number, car_folio: string) =>
+				mockBankStatement.pipe(
+					map((bs) => bs.find((b) => b.prc_id === pid && b.car_folio === car_folio)),
+					last(),
+				),
+			),
+		};
 
-    app = moduleFixture.createNestApplication();
-    await app.init()
-  });
+		const moduleFixture: TestingModule = await Test.createTestingModule({
+			imports: [WinstonModule.forRoot(logger.console())],
+			controllers: [BankStatementController],
+			providers: [BankStatementController, BankStatementRepository],
+		})
+			.overrideProvider(BankStatementRepository)
+			.useValue(mockBankStatementRepository)
+			.compile();
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/v1/users/')
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .expect(mockUser);
-  });
-  it('/user (POST)', () => {
-    const createUserDto = {
-      name: 'the-product',
-      lastname: 'the-brand',
-      email: 'the-category',
-    };
+		app = moduleFixture.createNestApplication();
+		await app.init();
+	});
 
-    return request(app.getHttpServer())
-      .post('/v1/users/')
-      .send(createUserDto)
-      .expect(201)
-      .then((response) => {
-        expect(response.body).toEqual({
-          id: expect.any(Number),
-          ...createUserDto,
-        });
-      });
-  });
+	it('/bank-statements/processID/car_folio?b64=true (GET)', () => {
+		return request(app.getHttpServer())
+			.get('/bank-statements/1/AEDS1?b64=true')
+			.expect(HttpStatus.OK)
+			.expect('Content-Type', /json/)
+			.expect(mockBankStatement);
+	});
 
-
-  afterAll(async () => {
-    await app.close();
-  });
-
-
+	afterAll(async () => {
+		await app.close();
+	});
 });

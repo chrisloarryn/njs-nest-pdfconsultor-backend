@@ -18,7 +18,7 @@ export class HttpConfig {
 
 	private validateInput(envConfig: NodeJS.ProcessEnv): IEnvConfigInterface {
 		const envVarsSchema: Joi.ObjectSchema = Joi.object({
-			NODE_ENV: Joi.string().valid('development', 'qa').default('development'),
+			NODE_ENV: Joi.string().valid('development', 'qa', 'test').default('development'),
 			PORT: Joi.number().required(),
 		}).unknown(true);
 

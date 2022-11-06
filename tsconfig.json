@@ -1,24 +1,24 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "es2017",
-    "sourceMap": false,
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "incremental": true,
-    "strict": true,
-    "strictPropertyInitialization": false,
-    // no check node_modules
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "typeRoots": [
-      "node_modules/@types",
-      "src/api/types"
-    ],
-  }
+	"compilerOptions": {
+		"module": "commonjs",
+		"declaration": true,
+		"removeComments": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"target": "es2017",
+		"sourceMap": false,
+		"outDir": "./dist",
+		"baseUrl": "./",
+		"incremental": true,
+		"strict": true,
+		"strictPropertyInitialization": false,
+		// no check node_modules
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"typeRoots": ["node_modules/@types", "src/api/types"],
+		"paths": {
+			"@ccla/*": ["src/*"]
+		}
+	}
 }

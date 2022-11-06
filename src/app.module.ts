@@ -1,4 +1,3 @@
-import { InMemoryDBModule } from '@nestjs-addons/in-memory-db';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -7,33 +6,16 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
 import { WinstonModule } from 'nest-winston';
 
-import {
-	BankStatementController,
-
-	// tbd
-	PostController,
-	TestController,
-	UserController,
-	UserMemoryController,
-} from './api/controller';
-import { BankStatement, User } from './api/entities';
-import {
-	BankStatementRepository,
-
-	// tbd
-	UserRepository,
-} from './api/repository';
-import {
-	BankStatementService,
-
-	// tbd
-	PostService,
-	UserMemoryService,
-	UserService,
-} from './api/service';
-import { dotEnvOptions, HealthController } from './api/utils';
-import { HttpConfig, LoggerConfig, PostgresConfig } from './config';
-import pgConfig from './config/pg.config';
+import { dotEnvOptions } from '@ccla/api/common/utils/dotenv-options';
+import { HealthController } from '@ccla/api/common/utils/health.controller';
+import { BankStatementModule } from '@ccla/api/modules/bank-statement/bank-statement.module';
+import { BankStatement } from '@ccla/api/modules/bank-statement/entities/bank-statement.entity';
+import { Process } from '@ccla/api/modules/process/entities/process.entity';
+import { Product } from '@ccla/api/modules/product/entities/product.entity';
+import { HttpConfig } from '@ccla/config/http.config';
+import { LoggerConfig } from '@ccla/config/loggerConfig';
+import pgConfig from '@ccla/config/pg-config';
+import { PostgresConfig } from '@ccla/config/postgresConfig';
 
 dotenv.config({ path: dotEnvOptions.path });
 
@@ -65,31 +47,11 @@ const http: HttpConfig = new HttpConfig();
 				return typeOrmOptions;
 			},
 		}),
-		TypeOrmModule.forFeature([BankStatement, User]),
-		InMemoryDBModule.forRoot({}),
+		TypeOrmModule.forFeature([BankStatement, Process, Product]),
 		HttpModule.register(http.getOptions()),
 		TerminusModule,
+		BankStatementModule,
 	],
-	controllers: [
-		HealthController,
-		BankStatementController,
-
-		// tbd
-		PostController,
-		TestController,
-		UserController,
-		UserMemoryController,
-	],
-	providers: [
-		BankStatementService,
-
-		// tbd
-		PostService,
-		UserMemoryService,
-		UserService,
-		BankStatementRepository,
-		// tbd
-		UserRepository,
-	],
+	controllers: [HealthController],
 })
 export class AppModule {}
