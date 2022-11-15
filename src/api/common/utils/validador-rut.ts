@@ -1,3 +1,5 @@
+import { validate, digits, clean } from '@validatecl/rut';
+
 export class ValidadorRut {
 	/**
 	 * Function get digito varificador.
@@ -37,5 +39,18 @@ export class ValidadorRut {
 	public static validacionLargoDV(dv: string): boolean {
 		if (dv.length > 1) return false;
 		else return true;
+	}
+
+	public static isValid(rut: string): boolean {
+		return validate(rut);
+	}
+
+	public static validateChileanRutAndGetOnlyNumbers(rut: string): string | null {
+		if (!validate(rut)) {
+			return null;
+		}
+		const rutClean = clean(rut) as string;
+		const rutDigits = digits(rutClean);
+		return rutDigits;
 	}
 }

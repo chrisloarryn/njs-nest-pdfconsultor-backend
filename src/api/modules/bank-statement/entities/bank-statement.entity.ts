@@ -44,6 +44,10 @@ export class BankStatement {
 	car_url: string;
 
 	@ApiProperty()
+	@Column({ nullable: true, comment: 'Periodo' })
+	car_periodo: string;
+
+	@ApiProperty()
 	@Column({ nullable: true, comment: 'Nombre Archivo Cartola' })
 	car_name: string;
 
@@ -82,6 +86,10 @@ export class BankStatement {
 	}
 	setBankStatementProductID(productID: string) {
 		this.prd_id = productID;
+		return this;
+	}
+	setBankStatementPeriod(period: string) {
+		this.car_periodo = period;
 		return this;
 	}
 	toJson() {

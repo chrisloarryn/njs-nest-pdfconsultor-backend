@@ -13,7 +13,6 @@ declare global {
 			POSTGRES_DB: string;
 			POSTGRES_SCHEMA: string;
 			POSTGRES_SYNCHRONIZE: string;
-			POSTGRES_KEEP_CONNECTION_ALIVE: string;
 			POSTGRES_LOGGING: string;
 			SWAGGER_NAME: string;
 			HTTP_TIMEOUT: string;
@@ -25,6 +24,7 @@ declare global {
 			GLOBAL_PREFIX: string;
 			HTTP_TIMEOUT: string;
 			HTTP_MAX_REDIRECT: string;
+			LOG_LEVEL: string;
 		}
 	}
 }

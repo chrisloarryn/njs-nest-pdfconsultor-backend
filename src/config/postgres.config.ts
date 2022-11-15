@@ -1,10 +1,11 @@
-import Joi from '@hapi/joi';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
+import Joi from 'joi';
 
 export class PostgresConfig implements TypeOrmOptionsFactory {
-	postgresConfig: TypeOrmModuleOptions;
+	postgresConfig: TypeOrmModuleOptions | undefined;
 
-	constructor(options: TypeOrmModuleOptions) {
+	constructor(options?: TypeOrmModuleOptions) {
+		if (!options) throw new Error('Postgres config is not defined');
 		this.postgresConfig = options;
 	}
 	createTypeOrmOptions(connectionName?: string | undefined): TypeOrmModuleOptions | Promise<TypeOrmModuleOptions> {
@@ -15,6 +16,9 @@ export class PostgresConfig implements TypeOrmOptionsFactory {
 	}
 
 	validate() {
+		if (!this.postgresConfig) {
+			throw new Error('Postgres config is not defined');
+		}
 		const envConfig = this.validateInput(this.postgresConfig);
 		const postgresConfig: TypeOrmModuleOptions = envConfig;
 
@@ -29,14 +33,14 @@ export class PostgresConfig implements TypeOrmOptionsFactory {
 			username: Joi.string().required(),
 			password: Joi.string().required(),
 			database: Joi.string().required(),
-			synchronize: Joi.boolean().default(false),
-			logging: Joi.boolean().default(false),
+			synchronize: Joi.alternatives().try(Joi.boolean(), Joi.string().valid('true', 'false')),
+			logging: Joi.alternatives().try(Joi.boolean(), Joi.string().valid('true', 'false')),
+			autoLoadEntities: Joi.boolean().default(true),
 			entities: Joi.array().items(Joi.string()).default([]),
 			migrations: Joi.array().items(Joi.string()).default([]),
 			subscribers: Joi.array().items(Joi.string()).default([]),
-		})
-			.unknown(true)
-			.optional();
+			schema: Joi.string().default('public'),
+		}).optional();
 
 		const { error, value: validatedEnvConfig } = envVarsSchema.validate(envConfig);
 		if (error) {

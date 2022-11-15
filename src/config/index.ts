@@ -1,3 +1,3 @@
 export * from './loggerConfig';
-export * from './postgresConfig';
+export * from './postgres.config';
 export * from './http.config';

@@ -14,8 +14,8 @@ import { Process } from '@ccla/api/modules/process/entities/process.entity';
 import { Product } from '@ccla/api/modules/product/entities/product.entity';
 import { HttpConfig } from '@ccla/config/http.config';
 import { LoggerConfig } from '@ccla/config/loggerConfig';
-import pgConfig from '@ccla/config/pg-config';
-import { PostgresConfig } from '@ccla/config/postgresConfig';
+import pgConfig from '@ccla/config/pg.config';
+import { PostgresConfig } from '@ccla/config/postgres.config';
 
 dotenv.config({ path: dotEnvOptions.path });
 

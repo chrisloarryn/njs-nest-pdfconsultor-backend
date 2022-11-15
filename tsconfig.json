@@ -16,9 +16,17 @@
 		// no check node_modules
 		"skipLibCheck": true,
 		"esModuleInterop": true,
-		"typeRoots": ["node_modules/@types", "src/api/types"],
+		"typeRoots": [
+			"node_modules/@types",
+			"src/api/types"
+		],
 		"paths": {
-			"@ccla/*": ["src/*"]
+			"@ccla/*": [
+				"src/*"
+			],
+			"@cclatest/*": [
+				"test/*"
+			]
 		}
 	}
 }

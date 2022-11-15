@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { instanceToPlain } from 'class-transformer';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
 
-import { ApprovalEnum } from './../enum';
+import { ApprovalEnum } from '../enum';
 
 @Entity('productos', { schema: 'public' })
 export class Product {

@@ -5,12 +5,13 @@ import { WinstonModule } from 'nest-winston';
 import { from, last, map, Observable, toArray } from 'rxjs';
 import request from 'supertest';
 
+import { BankStatementController } from '@ccla/api/modules/bank-statement/controller/bank-statement.controller';
 import { parseStrToBase64 } from 'src/api/common/utils/b64.utils';
-import { BankStatementController } from 'src/api/modules/bank-statement/bank-statement.controller';
-import { AcquireBankStatementUrl, AcquireWithBase64, BankStatement } from 'src/api/modules/bank-statement/entities/bank-statement.entity';
 
-import { BankStatementRepository } from '../src/api/repository';
+import { BankStatementRepository } from '../src/api/modules/bank-statement/repository/bank-statement.repository';
 import { LoggerConfig } from '../src/config';
+import { AcquireBankStatementUrl, AcquireWithBase64 } from './../src/api/modules/bank-statement/entities/b64.bank-statement.entity';
+import { BankStatement } from './../src/api/modules/bank-statement/entities/bank-statement.entity';
 
 const logger: LoggerConfig = new LoggerConfig();
 
