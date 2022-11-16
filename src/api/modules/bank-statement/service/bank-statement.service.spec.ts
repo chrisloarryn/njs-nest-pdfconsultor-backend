@@ -47,6 +47,7 @@ describe('BankStatementService', () => {
 
 		const app = await Test.createTestingModule({
 			providers: [
+				BankStatementService,
 				{
 					provide: BankStatementService,
 					useFactory: vi.fn(),
@@ -57,14 +58,10 @@ describe('BankStatementService', () => {
 					useFactory: vi.fn(),
 					useValue: mockedRepo,
 				},
-				/* {
-					provide: BankStatementRepository,
-					useFactory: vi.fn(),
-				},
 				{
 					provide: getRepositoryToken(AcquireWithBase64),
 					useValue: mockedRepo,
-				}, */
+				},
 			],
 		}).compile();
 
