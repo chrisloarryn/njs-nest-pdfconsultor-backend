@@ -9,7 +9,7 @@ import { AcquireBankStatementUrl, BankStatement } from '../entities';
 export class BankStatementRepository {
 	constructor(@InjectRepository(BankStatement) private repository: Repository<BankStatement>) {}
 
-	public getBankStatementsByByPeriodRutAndFolio(period: string, rut: number, folio: string): Observable<AcquireBankStatementUrl[]> {
+	public getBankStatementsByPeriodRutAndFolio(period: string, rut: number, folio: string): Observable<AcquireBankStatementUrl[]> {
 		return from(
 			this.repository.find({
 				where: { car_periodo: period, car_rut: rut, car_folio: folio },

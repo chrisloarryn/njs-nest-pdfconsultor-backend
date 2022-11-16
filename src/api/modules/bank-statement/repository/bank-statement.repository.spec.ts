@@ -205,7 +205,7 @@ describe('BankStatementRepository', () => {
 
 			vi.spyOn(repo, 'find').mockImplementation(find);
 
-			const result = await lastValueFrom(bankStatementRepository.getBankStatementsByByPeriodRutAndFolio(period, rut, folio));
+			const result = await lastValueFrom(bankStatementRepository.getBankStatementsByPeriodRutAndFolio(period, rut, folio));
 
 			expect(result).toEqual(bankStatement);
 		});
@@ -219,7 +219,7 @@ describe('BankStatementRepository', () => {
 
 			vi.spyOn(repo, 'find').mockImplementation(find);
 
-			expect(() => lastValueFrom(bankStatementRepository.getBankStatementsByByPeriodRutAndFolio(period, rut, folio))).rejects.toThrowError(
+			expect(() => lastValueFrom(bankStatementRepository.getBankStatementsByPeriodRutAndFolio(period, rut, folio))).rejects.toThrowError(
 				ErrorNoOccurrencesFound,
 			);
 		});

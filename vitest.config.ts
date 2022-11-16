@@ -39,8 +39,7 @@ export default defineConfig({
 			lines: 80,
 			statements: 80,
 			*/
-			clean: true,
-			reportsDirectory: 'coverage',
+			// clean: true,
 			exclude: [
 				'**/node_modules/**',
 				'**/dist/**',

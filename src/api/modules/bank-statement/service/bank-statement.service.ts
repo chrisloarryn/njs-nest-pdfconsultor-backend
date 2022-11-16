@@ -16,8 +16,8 @@ type BankStatementOptions = {
 
 @Injectable()
 export class BankStatementService {
-	private readonly repo: BankStatementRepository;
-	getBankStatementByPeriodRutAndFolio(bsOptions?: BankStatementOptions): Observable<AcquireWithBase64[] | AcquireBankStatementUrl[]> {
+	constructor(private readonly repo: BankStatementRepository) {}
+	getBankStatementsByPeriodRutAndFolio(bsOptions?: BankStatementOptions): Observable<AcquireWithBase64[] | AcquireBankStatementUrl[]> {
 		console.log('bsOptions', bsOptions);
 		if (!bsOptions) {
 			throw new BadRequestException('Bank statement options are required');
@@ -38,7 +38,7 @@ export class BankStatementService {
 			throw new BadRequestException('Rut is not valid');
 		}
 
-		const validatedRut = ValidadorRut.validateChileanRutAndGetOnlyNumbers(rut!);
+		const validatedRut = ValidadorRut.validateChileanRutAndGetOnlyNumbers(String(rut));
 
 		if (!validatedRut) {
 			// return error if is not valid
@@ -61,7 +61,7 @@ export class BankStatementService {
 		}
 
 		// if all params exists
-		return this.findByPeriodRutAndFolio(period!, Number(validatedRut), folio!, options);
+		return this.findByPeriodRutAndFolio(String(period), Number(validatedRut), String(folio), options);
 	}
 
 	findByRut(rut: string): Observable<AcquireBankStatementUrl[] | AcquireWithBase64[]> {
@@ -81,7 +81,8 @@ export class BankStatementService {
 		folio: string,
 		options: BankStatementAdditionalInfoDTO,
 	): Observable<AcquireBankStatementUrl[] | AcquireWithBase64[]> {
-		return this.handleObservableResponse(this.repo.getPdfsByPeriodAndFolio(period, folio), options);
+		const repoRes = this.repo.getPdfsByPeriodAndFolio(period, folio);
+		return this.handleObservableResponse(repoRes, options);
 	}
 
 	findByPeriodAndRut(
@@ -98,7 +99,7 @@ export class BankStatementService {
 		folio: string,
 		options: BankStatementAdditionalInfoDTO,
 	): Observable<AcquireBankStatementUrl[] | AcquireWithBase64[]> {
-		return this.handleObservableResponse(this.repo.getBankStatementsByByPeriodRutAndFolio(period, rut, folio), options);
+		return this.handleObservableResponse(this.repo.getBankStatementsByPeriodRutAndFolio(period, rut, folio), options);
 	}
 
 	handleObservableResponse(
