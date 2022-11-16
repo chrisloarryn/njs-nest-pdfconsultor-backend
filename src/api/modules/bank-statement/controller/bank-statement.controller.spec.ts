@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { catchError, from, last, lastValueFrom, map, Observable, throwIfEmpty, toArray } from 'rxjs';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { parseStrToBase64 } from '../../../common/utils/b64.utils';
 import { AcquireBankStatementUrl, AcquireWithBase64 } from '../entities';
@@ -48,7 +49,7 @@ describe('BankStatementController', () => {
 	beforeEach(async () => {
 		const bankStatements = randomBSByQuantity(7);
 		const mockedBankStatementsService = {
-			getBankStatementUrlByProcessIdAndFolio: jest.fn().mockImplementation((_rut: number, _car_folio: string) => {
+			getBankStatementUrlByProcessIdAndFolio: vi.fn().mockImplementation((_rut: number, _car_folio: string) => {
 				return bankStatements.pipe(
 					// map((bs) => bs.filter((b) => b.prc_id === pid && b.car_folio === car_folio)),
 					// map((bs) => bs[0]),
@@ -57,7 +58,7 @@ describe('BankStatementController', () => {
 			}),
 		};
 		const mockedRepo = {
-			getBankStatementUrlByProcessIdAndFolio: jest.fn().mockImplementation((rut: number, car_folio: string, period) =>
+			getBankStatementUrlByProcessIdAndFolio: vi.fn().mockImplementation((rut: number, car_folio: string, period) =>
 				bankStatements.pipe(
 					map((bs) => bs.filter((b) => b.car_rut === rut && b.car_folio === car_folio && b.car_periodo === period)),
 					last(),
@@ -65,7 +66,7 @@ describe('BankStatementController', () => {
 			),
 		};
 		const mockBankStatementsController = {
-			getBankStatementByProcessIdAndFolio: jest.fn().mockImplementation((car_folio: string, period: string, rut: number, b64: boolean) =>
+			getBankStatementByProcessIdAndFolio: vi.fn().mockImplementation((car_folio: string, period: string, rut: number, b64: boolean) =>
 				/* It's a pipe that transforms the bank-statement into a base64 string if the `b64` parameter is
 			true. */
 				bankStatements.pipe(
@@ -91,7 +92,7 @@ describe('BankStatementController', () => {
 						type ConditionalFilterWB64 = keyof AcquireWithBase64;
 						const e = bs.filter((b: AcquireWithBase64) => {
 							const condition = Object.entries(conditionalFilter).every(([key, value]) => {
-								const valueFromBToCompare = b[key as ConditionalFilterNB64 | ConditionalFilterWB64];
+								const valueFromBToCompare: any = b[key as ConditionalFilterNB64 | ConditionalFilterWB64];
 								if (typeof valueFromBToCompare === 'string') {
 									return valueFromBToCompare === String(value);
 								}
@@ -133,16 +134,16 @@ describe('BankStatementController', () => {
 			providers: [
 				{
 					provide: BankStatementService,
-					useFactory: jest.fn(),
+					useFactory: vi.fn(),
 					useValue: mockedBankStatementsService,
 				},
 				{
 					provide: BankStatementRepository,
-					useFactory: jest.fn(),
+					useFactory: vi.fn(),
 				},
 				{
 					provide: BankStatementController,
-					useFactory: jest.fn(),
+					useFactory: vi.fn(),
 					useValue: mockBankStatementsController,
 				},
 				{
@@ -151,7 +152,7 @@ describe('BankStatementController', () => {
 				},
 				{
 					provide: WINSTON_MODULE_NEST_PROVIDER,
-					useValue: { log: jest.fn() },
+					useValue: { log: vi.fn() },
 				},
 			],
 		}).compile();
@@ -159,15 +160,15 @@ describe('BankStatementController', () => {
 		controller = testingModule.get<BankStatementController>(BankStatementController);
 		service = testingModule.get<BankStatementService>(BankStatementService);
 	});
-	it('[OK] controller should be defined', () => {
+	it.concurrent('[OK] controller should be defined', () => {
 		expect(controller).toBeDefined();
 	});
 
-	it('[OK] service should be defined', () => {
+	it.concurrent('[OK] service should be defined', () => {
 		expect(service).toBeDefined();
 	});
 
-	it(`[OK] should retrieve a bank-statement by 'car_periodo', 'car_rut' and 'car_folio'. (no base64)`, async () => {
+	it.concurrent(`[OK] should retrieve a bank-statement by 'car_periodo', 'car_rut' and 'car_folio'. (no base64)`, async () => {
 		const prc_id = 1,
 			car_periodo = `car_periodo${prc_id}`,
 			car_rut = `${prc_id}`,
@@ -196,7 +197,7 @@ describe('BankStatementController', () => {
 		expect(bankStatementB64Type.base64).toBeUndefined();
 	});
 
-	it(`[OK] should retrieve a bank-statement by 'car_periodo', 'car_rut' and 'car_folio'. (with base64)`, async () => {
+	it.concurrent(`[OK] should retrieve a bank-statement by 'car_periodo', 'car_rut' and 'car_folio'. (with base64)`, async () => {
 		const prc_id = 2,
 			car_period = `car_periodo${prc_id}`,
 			car_folio = `car_folio${prc_id}`,

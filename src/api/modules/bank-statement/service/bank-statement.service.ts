@@ -2,10 +2,10 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import pdf2base64 from 'pdf-to-base64';
 import { catchError, from, map, Observable, retry } from 'rxjs';
 
-import { ValidadorRut } from '@ccla/api/common/utils';
-import { BankStatementAdditionalInfoDTO } from '@ccla/api/modules/bank-statement/dto';
-import { AcquireBankStatementUrl, AcquireWithBase64 } from '@ccla/api/modules/bank-statement/entities';
-import { BankStatementRepository } from '@ccla/api/modules/bank-statement/repository';
+import { ValidadorRut } from './../../../common/utils/validador-rut';
+import { BankStatementAdditionalInfoDTO } from './../dto/b64.bank-statement.dto';
+import { AcquireBankStatementUrl, AcquireWithBase64 } from './../entities';
+import { BankStatementRepository } from './../repository';
 
 type BankStatementOptions = {
 	folio?: string;

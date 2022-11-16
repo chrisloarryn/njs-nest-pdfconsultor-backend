@@ -29,23 +29,23 @@ describe('postgres.config for TypeOrm Module', () => {
 	});
 
 	describe('when all environment variables are defined', () => {
-		it('[OK] config should be defined', () => {
+		it.concurrent('[OK] config should be defined', () => {
 			expect(config).toBeDefined();
 		});
-		it('[OK] postgresConfig should be defined', () => {
+		it.concurrent('[OK] postgresConfig should be defined', () => {
 			expect(postgresConfig).toBeDefined();
 		});
 	});
 
 	describe('when create ok typeorm config', () => {
-		it('[OK] config object should have mandatory postgres variales', () => {
+		it.concurrent('[OK] config object should have mandatory postgres variales', () => {
 			expect(config).toHaveProperty('type');
 			expect(config).toHaveProperty('host');
 			expect(config).toHaveProperty('port');
 			expect(config).toHaveProperty('username');
 		});
 
-		it('[OK] should create a valid typeorm config for postgres with all environment variables defined', () => {
+		it.concurrent('[OK] should create a valid typeorm config for postgres with all environment variables defined', () => {
 			// deep clone by prevent read-only error modifying config object.
 			const configMutable: any = { ...config };
 

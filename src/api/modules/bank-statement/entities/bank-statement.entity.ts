@@ -14,6 +14,7 @@ export class BankStatement {
 		primary: true,
 		generated: false,
 		primaryKeyConstraintName: 'cartolas_pk',
+		type: 'integer',
 	})
 	prc_id: number;
 
@@ -23,6 +24,7 @@ export class BankStatement {
 		primary: true,
 		generated: false,
 		primaryKeyConstraintName: 'cartolas_pk',
+		type: 'varchar',
 	})
 	prd_id: string;
 
@@ -32,35 +34,36 @@ export class BankStatement {
 		primary: true,
 		generated: false,
 		primaryKeyConstraintName: 'cartolas_pk',
+		type: 'varchar',
 	})
 	car_folio: string;
 
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Rut Cartola' })
+	@Column({ nullable: true, comment: 'Rut Cartola', type: 'integer' })
 	car_rut: number;
 
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'URL Ubicación Archivo' })
+	@Column({ nullable: true, comment: 'URL Ubicación Archivo', type: 'varchar' })
 	car_url: string;
 
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Periodo' })
+	@Column({ nullable: true, comment: 'Periodo', type: 'varchar' })
 	car_periodo: string;
 
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Nombre Archivo Cartola' })
+	@Column({ nullable: true, comment: 'Nombre Archivo Cartola', type: 'varchar' })
 	car_name: string;
 
 	@ApiProperty()
-	@VersionColumn({ comment: 'Version de cambios en Cartola' })
+	@VersionColumn({ comment: 'Version de cambios en Cartola', type: 'integer' })
 	version: number;
 
 	@ApiProperty()
-	@CreateDateColumn({ comment: 'Fecha de creación de Cartola' })
+	@CreateDateColumn({ comment: 'Fecha de creación de Cartola', type: 'datetime' })
 	created_at: Date;
 
 	@ApiProperty()
-	@UpdateDateColumn({ comment: 'Fecha de actualización de Cartola' })
+	@UpdateDateColumn({ comment: 'Fecha de actualización de Cartola', type: 'datetime' })
 	updated_at: Date;
 
 	// methods

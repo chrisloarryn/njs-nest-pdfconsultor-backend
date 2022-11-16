@@ -18,27 +18,36 @@ export class Product {
 	prd_id: string;
 
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Nombre de Producto' })
+	@Column({ nullable: true, comment: 'Nombre de Producto', type: 'varchar' })
 	prd_nombre: string;
 
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Tipo de Producto' })
+	@Column({ nullable: true, comment: 'Tipo de Producto', type: 'varchar' })
 	prd_tipo: string;
 
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Frecuencia de ejecución' })
+	@Column({ nullable: true, comment: 'Frecuencia de ejecución', type: 'integer' })
 	prd_frecuencia: number;
 
 	@ApiProperty()
-	@Column({ nullable: true, enum: ApprovalEnum, comment: 'Nivel de Aprobación (Nivel 0, NIvel 1, Nivel 2)' })
+	@Column({
+		nullable: true,
+		enum: ApprovalEnum,
+		comment: 'Nivel de Aprobación (Nivel 0, NIvel 1, Nivel 2)',
+		type: 'integer',
+	})
 	prd_aprobacion: number;
 
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Nivel de Aprobación (Nivel 0, NIvel 1, Nivel 2)' })
+	@Column({
+		nullable: true,
+		comment: 'Nivel de Aprobación (Nivel 0, NIvel 1, Nivel 2)',
+		type: 'boolean',
+	})
 	prd_estado: boolean;
 
 	@ApiProperty()
-	@VersionColumn({ comment: 'Version de cambios en Producto' })
+	@VersionColumn({ comment: 'Version de cambios en Producto', type: 'integer' })
 	version: number;
 
 	@ApiProperty()

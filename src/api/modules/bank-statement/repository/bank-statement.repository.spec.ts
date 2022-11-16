@@ -4,12 +4,12 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { WinstonModule } from 'nest-winston';
 import { from, lastValueFrom } from 'rxjs';
 import { Repository } from 'typeorm';
-
-import { LoggerConfig } from '@ccla/config';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createBankStatement } from '../../../../../test/helpers/createBankStatement.helper';
 import { BankStatement } from '../entities';
 import { ErrorNoOccurrencesFound } from './../../../../../test/constants/errorConstants';
+import { LoggerConfig } from './../../../../config';
 import { BankStatementRepository } from './../repository';
 
 const logger: LoggerConfig = new LoggerConfig();
@@ -26,8 +26,8 @@ describe('BankStatementRepository', () => {
 				{
 					provide: getRepositoryToken(BankStatement),
 					useValue: {
-						createQueryBuilder: jest.fn(),
-						find: jest.fn(),
+						createQueryBuilder: vi.fn(),
+						find: vi.fn(),
 					},
 				},
 			],
@@ -38,68 +38,68 @@ describe('BankStatementRepository', () => {
 	});
 
 	describe("When declare repository and it's methods", () => {
-		it('[OK] should be defined', () => {
+		it.concurrent('[OK] should be defined', () => {
 			expect(bankStatementRepository).toBeDefined();
 			expect(repo).toBeDefined();
 		});
 	});
 
 	describe('When get pdfs by rut', () => {
-		it('[OK] should find one', async () => {
+		it.concurrent('[OK] should find one', async () => {
 			const rut = Number(faker.random.numeric(10));
 			const bankStatement: BankStatement = createBankStatement({
 				rut,
 			}) as BankStatement;
 
-			const find = jest.fn().mockReturnValueOnce(from([bankStatement]));
+			const find = vi.fn().mockReturnValueOnce(from([bankStatement]));
 
-			jest.spyOn(repo, 'find').mockImplementation(find);
+			vi.spyOn(repo, 'find').mockImplementation(find);
 
 			const result = await lastValueFrom(bankStatementRepository.getPdfsByRut(rut)); // await ;
 
 			expect(result).toEqual(bankStatement);
 		});
 
-		it("[ERROR] if rut doesn't exist should return no occurrences found", async () => {
+		it.concurrent("[ERROR] if rut doesn't exist should return no occurrences found", async () => {
 			const rut = Number(faker.random.numeric(10));
 
-			const find = jest.fn().mockReturnValueOnce(from([]));
+			const find = vi.fn().mockReturnValueOnce(from([]));
 
-			jest.spyOn(repo, 'find').mockImplementation(find);
+			vi.spyOn(repo, 'find').mockImplementation(find);
 
 			expect(() => lastValueFrom(bankStatementRepository.getPdfsByRut(rut))).rejects.toThrowError(ErrorNoOccurrencesFound);
 		});
 	});
 
 	describe('When get pdfs by folio', () => {
-		it('[OK] should find one', async () => {
+		it.concurrent('[OK] should find one', async () => {
 			const folio = faker.random.alphaNumeric(10);
 			const bankStatement: BankStatement = createBankStatement({
 				folio,
 			}) as BankStatement;
 
-			const find = jest.fn().mockReturnValueOnce(from([bankStatement]));
+			const find = vi.fn().mockReturnValueOnce(from([bankStatement]));
 
-			jest.spyOn(repo, 'find').mockImplementation(find);
+			vi.spyOn(repo, 'find').mockImplementation(find);
 
 			const result = await lastValueFrom(bankStatementRepository.getPdfsByFolio(folio));
 
 			expect(result).toEqual(bankStatement);
 		});
 
-		it("[ERROR] if folio doesn't exist should return no occurrences found", async () => {
+		it.concurrent("[ERROR] if folio doesn't exist should return no occurrences found", async () => {
 			const folio = faker.random.alphaNumeric(10);
 
-			const find = jest.fn().mockReturnValueOnce(from([]));
+			const find = vi.fn().mockReturnValueOnce(from([]));
 
-			jest.spyOn(repo, 'find').mockImplementation(find);
+			vi.spyOn(repo, 'find').mockImplementation(find);
 
 			expect(() => lastValueFrom(bankStatementRepository.getPdfsByFolio(folio))).rejects.toThrowError(ErrorNoOccurrencesFound);
 		});
 	});
 
 	describe('When get pdfs by period and folio', () => {
-		it('[OK] should find one', async () => {
+		it.concurrent('[OK] should find one', async () => {
 			const folio = faker.random.alphaNumeric(10);
 			const period = faker.random.alphaNumeric(10);
 			const bankStatement: BankStatement = createBankStatement({
@@ -107,29 +107,29 @@ describe('BankStatementRepository', () => {
 				period,
 			}) as BankStatement;
 
-			const find = jest.fn().mockReturnValueOnce(from([bankStatement]));
+			const find = vi.fn().mockReturnValueOnce(from([bankStatement]));
 
-			jest.spyOn(repo, 'find').mockImplementation(find);
+			vi.spyOn(repo, 'find').mockImplementation(find);
 
 			const result = await lastValueFrom(bankStatementRepository.getPdfsByPeriodAndFolio(period, folio));
 
 			expect(result).toEqual(bankStatement);
 		});
 
-		it("[ERROR] if period and folio doesn't exist should return no occurrences found", async () => {
+		it.concurrent("[ERROR] if period and folio doesn't exist should return no occurrences found", async () => {
 			const folio = faker.random.alphaNumeric(10);
 			const period = faker.random.alphaNumeric(10);
 
-			const find = jest.fn().mockReturnValueOnce(from([]));
+			const find = vi.fn().mockReturnValueOnce(from([]));
 
-			jest.spyOn(repo, 'find').mockImplementation(find);
+			vi.spyOn(repo, 'find').mockImplementation(find);
 
 			expect(() => lastValueFrom(bankStatementRepository.getPdfsByPeriodAndFolio(period, folio))).rejects.toThrowError(ErrorNoOccurrencesFound);
 		});
 	});
 
 	describe('When get pdfs by folio and rut', () => {
-		it('[OK] should find one', async () => {
+		it.concurrent('[OK] should find one', async () => {
 			const folio = faker.random.alphaNumeric(10);
 			const rut = Number(faker.random.numeric(10));
 			const bankStatement: BankStatement = createBankStatement({
@@ -137,22 +137,22 @@ describe('BankStatementRepository', () => {
 				rut,
 			}) as BankStatement;
 
-			const find = jest.fn().mockReturnValueOnce(from([bankStatement]));
+			const find = vi.fn().mockReturnValueOnce(from([bankStatement]));
 
-			jest.spyOn(repo, 'find').mockImplementation(find);
+			vi.spyOn(repo, 'find').mockImplementation(find);
 
 			const result = await lastValueFrom(bankStatementRepository.getPdfsByFolioAndRut(folio, rut));
 
 			expect(result).toEqual(bankStatement);
 		});
 
-		it("[ERROR] if folio and rut doesn't exist should return no occurrences found", async () => {
+		it.concurrent("[ERROR] if folio and rut doesn't exist should return no occurrences found", async () => {
 			const folio = faker.random.alphaNumeric(10);
 			const rut = Number(faker.random.numeric(10));
 
-			const find = jest.fn().mockReturnValueOnce(from([]));
+			const find = vi.fn().mockReturnValueOnce(from([]));
 
-			jest.spyOn(repo, 'find').mockImplementation(find);
+			vi.spyOn(repo, 'find').mockImplementation(find);
 
 			expect(() => lastValueFrom(bankStatementRepository.getPdfsByFolioAndRut(folio, rut))).rejects.toThrowError(ErrorNoOccurrencesFound);
 		});
@@ -160,7 +160,7 @@ describe('BankStatementRepository', () => {
 
 	// find by period and rut
 	describe('When get pdfs by period and rut', () => {
-		it('[OK] should find one', async () => {
+		it.concurrent('[OK] should find one', async () => {
 			const period = faker.random.alphaNumeric(10);
 			const rut = Number(faker.random.numeric(10));
 			const bankStatement: BankStatement = createBankStatement({
@@ -168,22 +168,22 @@ describe('BankStatementRepository', () => {
 				rut,
 			}) as BankStatement;
 
-			const find = jest.fn().mockReturnValueOnce(from([bankStatement]));
+			const find = vi.fn().mockReturnValueOnce(from([bankStatement]));
 
-			jest.spyOn(repo, 'find').mockImplementation(find);
+			vi.spyOn(repo, 'find').mockImplementation(find);
 
 			const result = await lastValueFrom(bankStatementRepository.getPdfsByPeriodAndRut(period, rut));
 
 			expect(result).toEqual(bankStatement);
 		});
 
-		it("[ERROR] if period and rut doesn't exist should return no occurrences found", async () => {
+		it.concurrent("[ERROR] if period and rut doesn't exist should return no occurrences found", async () => {
 			const period = faker.random.alphaNumeric(10);
 			const rut = Number(faker.random.numeric(10));
 
-			const find = jest.fn().mockReturnValueOnce(from([]));
+			const find = vi.fn().mockReturnValueOnce(from([]));
 
-			jest.spyOn(repo, 'find').mockImplementation(find);
+			vi.spyOn(repo, 'find').mockImplementation(find);
 
 			expect(() => lastValueFrom(bankStatementRepository.getPdfsByPeriodAndRut(period, rut))).rejects.toThrowError(ErrorNoOccurrencesFound);
 		});
@@ -191,7 +191,7 @@ describe('BankStatementRepository', () => {
 
 	// find by period, folio and rut
 	describe('When get pdfs by period, folio and rut', () => {
-		it('[OK] should find one', async () => {
+		it.concurrent('[OK] should find one', async () => {
 			const period = faker.random.alphaNumeric(10);
 			const folio = faker.random.alphaNumeric(10);
 			const rut = Number(faker.random.numeric(10));
@@ -201,23 +201,23 @@ describe('BankStatementRepository', () => {
 				rut,
 			}) as BankStatement;
 
-			const find = jest.fn().mockReturnValueOnce(from([bankStatement]));
+			const find = vi.fn().mockReturnValueOnce(from([bankStatement]));
 
-			jest.spyOn(repo, 'find').mockImplementation(find);
+			vi.spyOn(repo, 'find').mockImplementation(find);
 
 			const result = await lastValueFrom(bankStatementRepository.getBankStatementsByByPeriodRutAndFolio(period, rut, folio));
 
 			expect(result).toEqual(bankStatement);
 		});
 
-		it("[ERROR] if period, folio and rut doesn't exist should return no occurrences found", async () => {
+		it.concurrent("[ERROR] if period, folio and rut doesn't exist should return no occurrences found", async () => {
 			const period = faker.random.alphaNumeric(10);
 			const folio = faker.random.alphaNumeric(10);
 			const rut = Number(faker.random.numeric(10));
 
-			const find = jest.fn().mockReturnValueOnce(from([]));
+			const find = vi.fn().mockReturnValueOnce(from([]));
 
-			jest.spyOn(repo, 'find').mockImplementation(find);
+			vi.spyOn(repo, 'find').mockImplementation(find);
 
 			expect(() => lastValueFrom(bankStatementRepository.getBankStatementsByByPeriodRutAndFolio(period, rut, folio))).rejects.toThrowError(
 				ErrorNoOccurrencesFound,

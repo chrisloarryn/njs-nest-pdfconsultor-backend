@@ -21,13 +21,13 @@ describe('pgConfig', () => {
 	});
 
 	describe('When configuration is ok', () => {
-		it('[OK] should be defined', () => {
+		it.concurrent('[OK] should be defined', () => {
 			expect(pgConfig).toBeDefined();
 		});
 	});
 
 	describe('When all environment variables are defined', () => {
-		it('[OK] should contains defined variables and be same as process.env', async () => {
+		it.concurrent('[OK] should contains defined variables and be same as process.env', async () => {
 			expect(config).toBeDefined();
 			expect(config.type).toBeDefined();
 			expect(config.host).toBeDefined();
@@ -42,7 +42,7 @@ describe('pgConfig', () => {
 			expect(config.subscribers).toBeDefined();
 		});
 
-		it('[OK] should have mandatory postgresql configuration environment variables', async () => {
+		it.concurrent('[OK] should have mandatory postgresql configuration environment variables', async () => {
 			expect(config.type).toEqual('postgres');
 			expect(config.host).toEqual('localhost');
 			expect(config.port).toEqual(5432);

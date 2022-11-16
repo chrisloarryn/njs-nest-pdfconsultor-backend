@@ -16,9 +16,13 @@
 		// no check node_modules
 		"skipLibCheck": true,
 		"esModuleInterop": true,
+		"types": [
+			"vitest/globals"
+		],
 		"typeRoots": [
 			"node_modules/@types",
-			"src/api/types"
+			"src/api/types",
+			"vitest/globals"
 		],
 		"paths": {
 			"@ccla/*": [

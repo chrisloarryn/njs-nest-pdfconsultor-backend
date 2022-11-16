@@ -4,36 +4,41 @@ import { ApiProperty } from '@nestjs/swagger';
 import { instanceToPlain } from 'class-transformer';
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
 
-import { BankStatement } from '@ccla/api/modules/bank-statement/entities';
+import { BankStatement } from './../../bank-statement/entities';
 
 @Entity('procesos', { schema: 'public' })
 export class Process {
 	@ApiProperty()
 	@PrimaryGeneratedColumn('increment', {
+		type: 'integer',
 		comment: 'Código Proceso',
 		primaryKeyConstraintName: 'procesos_pk',
 	})
 	prc_id: number;
 
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Código Producto' })
+	@Column({
+		nullable: true,
+		comment: 'Código Producto',
+		type: 'varchar',
+	})
 	prd_id: string;
 
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Periodo' })
+	@Column({ nullable: true, comment: 'Periodo', type: 'varchar' })
 	prc_periodo: string;
 
 	// datetime
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Fecha Inicial Periodo' })
+	@Column({ nullable: true, comment: 'Fecha Inicial Periodo', type: 'datetime' })
 	prc_fch_desde: Date;
 
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Fecha Final Periodo' })
+	@Column({ nullable: true, comment: 'Fecha Final Periodo', type: 'datetime' })
 	prc_fch_hasta: Date;
 
 	@ApiProperty()
-	@VersionColumn({ comment: 'Versión de cambios en Proceso' })
+	@VersionColumn({ comment: 'Versión de cambios en Proceso', type: 'integer' })
 	version: number;
 
 	@ApiProperty()

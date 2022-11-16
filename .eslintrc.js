@@ -67,7 +67,12 @@ module.exports = {
 			},
 		],
 		// turn on errors for missing imports
-		'import/no-unresolved': 'error',
+		'import/no-unresolved': [
+			'error',
+			{
+				ignore: ['rambda', 'lodash'],
+			},
+		],
 		// 'import/no-named-as-default-member': 'off',
 		'import/order': [
 			'error',

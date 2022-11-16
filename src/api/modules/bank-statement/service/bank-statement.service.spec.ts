@@ -2,60 +2,67 @@ import { faker } from '@faker-js/faker';
 import { BadRequestException, HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { from, lastValueFrom } from 'rxjs';
-
-import { AcquireWithBase64, BankStatement } from '@ccla/api/modules/bank-statement/entities';
-import { BankStatementRepository } from '@ccla/api/modules/bank-statement/repository';
+import { Observable, from, lastValueFrom } from 'rxjs';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createBankStatement } from './../../../../../test/helpers';
+import { AcquireWithBase64, BankStatement } from './../entities';
+import { BankStatementRepository } from './../repository';
 import { BankStatementService } from './bank-statement.service';
 
 describe('BankStatementService', () => {
 	let service: BankStatementService;
 	let testingModule: TestingModule;
 
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
 	beforeEach(async () => {
 		const mockedRepo = {
-			getBankStatementsByByPeriodRutAndFolio: jest.fn(),
-			getPdfsByPeriodAndRut: jest.fn(),
-			getPdfsByFolioAndRut: jest.fn(),
-			getPdfsByPeriodAndFolio: jest.fn(),
-			getPdfsByFolio: jest.fn(),
-			getPdfsByRut: jest.fn(),
+			getBankStatementsByByPeriodRutAndFolio: vi.fn(),
+			getPdfsByPeriodAndRut: vi.fn(),
+			getPdfsByFolioAndRut: vi.fn(),
+			getPdfsByPeriodAndFolio: vi.fn(),
+			getPdfsByFolio: vi.fn(),
+			getPdfsByRut: vi.fn(),
 		};
 		const mockedBankStatementsService = {
-			getBankStatementByPeriodRutAndFolio: jest.fn(),
-			findByRut: jest.fn(),
-			findByFolioAndRut: jest.fn(),
-			findByPeriodAndFolio: jest.fn(),
-			findByPeriodAndRut: jest.fn(),
-			findByPeriodRutAndFolio: jest.fn(),
+			getBankStatementByPeriodRutAndFolio: vi.fn(),
+			findByRut: vi.fn(),
+			findByFolioAndRut: vi.fn(),
+			findByPeriodAndFolio: vi.fn(),
+			findByPeriodAndRut: vi.fn(),
+			findByPeriodRutAndFolio: vi.fn(),
 		};
 
 		testingModule = await Test.createTestingModule({
 			providers: [
 				{
 					provide: BankStatementService,
-					useFactory: jest.fn(),
+					useFactory: vi.fn(),
 					useValue: mockedBankStatementsService,
 				},
 				{
 					provide: BankStatementRepository,
-					useFactory: jest.fn(),
+					useFactory: vi.fn(),
 				},
 				{
 					provide: getRepositoryToken(AcquireWithBase64),
 					useValue: mockedRepo,
 				},
 			],
-		}).compile();
+		})
+			.overrideProvider(BankStatementService)
+			.useValue(mockedBankStatementsService)
+			.compile();
 
 		service = testingModule.get<BankStatementService>(BankStatementService);
 	});
 
 	describe('When Test Bank statement service [BS]', () => {
 		describe('When imports are working properly', () => {
-			it('[OK] service should be defined', () => {
+			it.concurrent('[OK] service should be defined', () => {
 				expect(service).toBeDefined();
 			});
 		});
@@ -69,9 +76,9 @@ describe('BankStatementService', () => {
 					base64: true,
 				},
 			};
-			it('[ERROR] should throw a bad request exception', async () => {
+			it.concurrent('[ERROR] should throw a bad request exception', async () => {
 				try {
-					jest.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockImplementation(() => {
+					vi.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockImplementation(() => {
 						throw new BadRequestException('Bank statement options are required');
 					});
 
@@ -95,9 +102,12 @@ describe('BankStatementService', () => {
 			};
 			process.env.LOG_LEVEL = 'info';
 
-			it('[ERROR] should throw an error (rut or folio is required) - [getBankStatementByPeriodRutAndFolio]', async () => {
+			it.concurrent('[ERROR] should throw an error (rut or folio is required) - [getBankStatementByPeriodRutAndFolio]', async () => {
 				try {
-					jest.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockImplementation(() => {
+					/* vi.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockImplementation(() => {
+						throw new BadRequestException('rut or folio is required');
+					}); */
+					vi.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockImplementation(() => {
 						throw new BadRequestException('rut or folio is required');
 					});
 
@@ -121,7 +131,7 @@ describe('BankStatementService', () => {
 			};
 			process.env.LOG_LEVEL = 'info';
 
-			it('[OK] should retrieve a bank statement', async () => {
+			it.concurrent('[OK] should retrieve a bank statement', async () => {
 				const bankStatements = [
 					createBankStatement({
 						folio: request.folio,
@@ -129,7 +139,7 @@ describe('BankStatementService', () => {
 					}),
 				];
 
-				jest.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockReturnValueOnce(from([bankStatements]));
+				vi.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockReturnValueOnce(from([bankStatements]));
 				const result = await lastValueFrom(service.getBankStatementByPeriodRutAndFolio(request));
 
 				expect(result).toBeDefined();
@@ -138,37 +148,61 @@ describe('BankStatementService', () => {
 				expect(result[0]).toEqual(bankStatements[0]);
 			});
 
-			it('[OK] should perform a right request by period and folio - [findByPeriodAndFolio]', async () => {
+			it.concurrent('[OK] should perform a right request by period and folio - [findByPeriodAndFolio]', async () => {
+				const reqFolio = request.folio + 1;
+				const reqPeriod = request.period + 1;
+
 				const bankStatements = [
 					createBankStatement({
 						folio: request.folio,
 						period: request.period,
 						base64: request.options.base64,
 					}),
+					createBankStatement({
+						folio: reqFolio,
+						period: reqPeriod,
+					}),
 				];
 
-				jest.spyOn(service, 'findByPeriodAndFolio').mockReturnValueOnce(from([bankStatements]));
+				const spy = vi.spyOn(service, 'findByPeriodAndFolio').mockImplementation((): Observable<BankStatement[] | AcquireWithBase64[]> => {
+					return from([bankStatements]);
+				});
 
-				const result = await lastValueFrom(service.findByPeriodAndFolio(request.period, request.folio, request.options));
+				const response = await lastValueFrom(service.findByPeriodAndFolio(request.period, request.folio, request.options));
 
-				expect(jest.spyOn(service, 'findByPeriodAndFolio')).toBeCalledTimes(1);
-				expect(result).toBeDefined();
-				expect(result).toBeInstanceOf(Array);
-				expect(result[0]).toBeInstanceOf(BankStatement);
-				expect(result[0]).toEqual(bankStatements[0]);
+				expect(spy).toHaveBeenCalled();
+
+				expect(spy).toHaveBeenCalledWith(request.period, request.folio, request.options);
+
+				expect(response[0]).toEqual(bankStatements[0]);
+
+				const mockedSecond = bankStatements[1];
+				spy.mockReturnValueOnce(from([[mockedSecond]]));
+
+				const responseExecution = await lastValueFrom(service.findByPeriodAndFolio(reqPeriod, reqFolio + 1, request.options));
+
+				expect(responseExecution[0].car_periodo).toEqual(reqPeriod);
+				expect(responseExecution[0].car_folio).toEqual(reqFolio);
+
+				expect(spy).toHaveBeenCalledTimes(2);
 			});
 
 			it('[OK] should return a empty array (bank statement not found) - [findByPeriodAndFolio]', async () => {
 				const bankStatements: BankStatement[] = [];
 
-				jest.spyOn(service, 'findByPeriodAndFolio').mockReturnValueOnce(from([bankStatements]));
+				const spy = vi.spyOn(service, 'findByPeriodAndFolio').mockImplementation((): Observable<BankStatement[] | AcquireWithBase64[]> => {
+					return from([bankStatements]);
+				});
 
-				const result = await lastValueFrom(service.findByPeriodAndFolio(request.period, request.folio, request.options));
+				const response = await lastValueFrom(service.findByPeriodAndFolio(request.period, request.folio, request.options));
 
-				expect(jest.spyOn(service, 'findByPeriodAndFolio')).toBeCalledTimes(1);
-				expect(result).toBeDefined();
-				expect(result).toBeInstanceOf(Array);
-				expect(result).toHaveLength(0);
+				expect(spy).toHaveBeenCalled();
+
+				expect(spy).toHaveBeenCalledWith(request.period, request.folio, request.options);
+
+				expect(response).toEqual(bankStatements);
+
+				expect(spy).toHaveBeenCalledTimes(1);
 			});
 		});
 
@@ -183,9 +217,9 @@ describe('BankStatementService', () => {
 			};
 			process.env.LOG_LEVEL = 'info';
 
-			it('[ERROR] should throw an error if rut is not valid - [getBankStatementByPeriodRutAndFolio]', async () => {
+			it.concurrent('[ERROR] should throw an error if rut is not valid - [getBankStatementByPeriodRutAndFolio]', async () => {
 				try {
-					jest.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockImplementation(() => {
+					vi.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockImplementation(() => {
 						throw new BadRequestException('Rut is not valid');
 					});
 
@@ -197,7 +231,7 @@ describe('BankStatementService', () => {
 				}
 			});
 
-			it('[OK] should fin a bank statement using a right rut - [getBankStatementByPeriodRutAndFolio]', async () => {
+			it.concurrent('[OK] should fin a bank statement using a right rut - [getBankStatementByPeriodRutAndFolio]', async () => {
 				request.rut = '253595635';
 
 				const bankStatements = [
@@ -206,7 +240,7 @@ describe('BankStatementService', () => {
 					}),
 				];
 
-				jest.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockReturnValueOnce(from([bankStatements]));
+				vi.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockReturnValueOnce(from([bankStatements]));
 				const result = await lastValueFrom(service.getBankStatementByPeriodRutAndFolio(request));
 
 				expect(result).toBeDefined();
@@ -215,9 +249,9 @@ describe('BankStatementService', () => {
 				expect(result[0]).toEqual(bankStatements[0]);
 			});
 
-			it('[ERROR] should throw an error if rut is not valid - [findByRut]', async () => {
+			it.concurrent('[ERROR] should throw an error if rut is not valid - [findByRut]', async () => {
 				try {
-					jest.spyOn(service, 'findByRut').mockImplementation(() => {
+					vi.spyOn(service, 'findByRut').mockImplementation(() => {
 						throw new BadRequestException('Rut is not valid');
 					});
 
@@ -229,7 +263,7 @@ describe('BankStatementService', () => {
 				}
 			});
 
-			it('[OK] should perform a right request by rut - [findByRut]', async () => {
+			it.concurrent('[OK] should perform a right request by rut - [findByRut]', async () => {
 				const bankStatements = [
 					createBankStatement({
 						rut: Number(request.rut),
@@ -237,11 +271,11 @@ describe('BankStatementService', () => {
 					}),
 				];
 
-				jest.spyOn(service, 'findByRut').mockReturnValueOnce(from([bankStatements]));
+				const spy = vi.spyOn(service, 'findByRut').mockReturnValueOnce(from([bankStatements]));
 
 				const result = await lastValueFrom(service.findByRut(request.rut));
 
-				expect(jest.spyOn(service, 'findByRut')).toBeCalledTimes(1);
+				expect(spy).toBeCalledTimes(1);
 				expect(result).toBeDefined();
 				expect(result).toBeInstanceOf(Array);
 				expect(result[0]).toBeInstanceOf(BankStatement);
@@ -260,9 +294,9 @@ describe('BankStatementService', () => {
 			};
 			process.env.LOG_LEVEL = 'info';
 
-			it('[ERROR] should throw an error if rut is not valid - [getBankStatementByPeriodRutAndFolio]', async () => {
+			it.concurrent('[ERROR] should throw an error if rut is not valid - [getBankStatementByPeriodRutAndFolio]', async () => {
 				try {
-					jest.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockImplementation(() => {
+					vi.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockImplementation(() => {
 						throw new BadRequestException('Rut is not valid');
 					});
 
@@ -274,7 +308,7 @@ describe('BankStatementService', () => {
 				}
 			});
 
-			it('[OK] should fin a bank statement using a right rut - [getBankStatementByPeriodRutAndFolio]', async () => {
+			it.concurrent('[OK] should fin a bank statement using a right rut - [getBankStatementByPeriodRutAndFolio]', async () => {
 				request.rut = '253595635';
 
 				const bankStatements = [
@@ -283,7 +317,7 @@ describe('BankStatementService', () => {
 					}),
 				];
 
-				jest.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockReturnValueOnce(from([bankStatements]));
+				vi.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockReturnValueOnce(from([bankStatements]));
 				const result = await lastValueFrom(service.getBankStatementByPeriodRutAndFolio(request));
 
 				expect(result).toBeDefined();
@@ -292,9 +326,9 @@ describe('BankStatementService', () => {
 				expect(result[0]).toEqual(bankStatements[0]);
 			});
 
-			it('[ERROR] should throw an error if rut is not valid - [findByFolioAndRut]', async () => {
+			it.concurrent('[ERROR] should throw an error if rut is not valid - [findByFolioAndRut]', async () => {
 				try {
-					jest.spyOn(service, 'findByFolioAndRut').mockImplementation(() => {
+					vi.spyOn(service, 'findByFolioAndRut').mockImplementation(() => {
 						throw new BadRequestException('Rut is not valid');
 					});
 
@@ -306,7 +340,7 @@ describe('BankStatementService', () => {
 				}
 			});
 
-			it('[OK] should find bankStatement by folio and rut', async () => {
+			it.concurrent('[OK] should find bankStatement by folio and rut', async () => {
 				const bankStatements = [
 					createBankStatement({
 						folio: request.folio,
@@ -315,25 +349,28 @@ describe('BankStatementService', () => {
 					}),
 				];
 
-				jest.spyOn(service, 'findByFolioAndRut').mockReturnValueOnce(from([bankStatements]));
+				const spy = vi.spyOn(service, 'findByFolioAndRut').mockReturnValueOnce(from([bankStatements]));
 
-				const result = await lastValueFrom(service.findByFolioAndRut(request.folio, request.rut, request.options));
+				const result = await lastValueFrom(service.findByFolioAndRut(request.rut, request.folio, request.options));
 
-				expect(jest.spyOn(service, 'findByFolioAndRut')).toBeCalledTimes(1);
+				expect(spy).toHaveBeenCalledWith(request.rut, request.folio, request.options);
 				expect(result).toBeDefined();
-				expect(result).toBeInstanceOf(Array);
-				expect(result[0]).toBeInstanceOf(BankStatement);
-				expect(result[0]).toEqual(bankStatements[0]);
+
+				spy.mockReturnValueOnce(from([bankStatements]));
+				expect(result).toEqual(bankStatements);
+
+				expect(spy).toHaveBeenCalledTimes(1);
 			});
 
-			it('[OK] should return a empty array (bank statement not found) - [findByPeriodAndFolio]', async () => {
+			it.concurrent('[OK] should return a empty array (bank statement not found) - [findByPeriodAndFolio]', async () => {
 				const bankStatements: BankStatement[] = [];
 
-				jest.spyOn(service, 'findByFolioAndRut').mockReturnValueOnce(from([bankStatements]));
+				const spy = vi.spyOn(service, 'findByFolioAndRut').mockReturnValueOnce(from([bankStatements]));
 
 				const result = await lastValueFrom(service.findByFolioAndRut(request.folio, request.rut, request.options));
 
-				expect(jest.spyOn(service, 'findByFolioAndRut')).toBeCalledTimes(1);
+				expect(spy).toHaveBeenCalledTimes(1);
+				expect(spy).toHaveBeenCalledWith(request.folio, request.rut, request.options);
 				expect(result).toBeDefined();
 				expect(result).toBeInstanceOf(Array);
 				expect(result).toHaveLength(0);
@@ -351,9 +388,9 @@ describe('BankStatementService', () => {
 			};
 			process.env.LOG_LEVEL = 'info';
 
-			it('[ERROR] should throw an error if rut is not valid - [getBankStatementByPeriodRutAndFolio]', async () => {
+			it.concurrent('[ERROR] should throw an error if rut is not valid - [getBankStatementByPeriodRutAndFolio]', async () => {
 				try {
-					jest.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockImplementation(() => {
+					vi.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockImplementation(() => {
 						throw new BadRequestException('Rut is not valid');
 					});
 
@@ -365,7 +402,7 @@ describe('BankStatementService', () => {
 				}
 			});
 
-			it('[OK] should fin a bank statement using a right rut - [getBankStatementByPeriodRutAndFolio]', async () => {
+			it.concurrent('[OK] should fin a bank statement using a right rut - [getBankStatementByPeriodRutAndFolio]', async () => {
 				request.rut = '253595635';
 
 				const bankStatements = [
@@ -374,7 +411,7 @@ describe('BankStatementService', () => {
 					}),
 				];
 
-				jest.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockReturnValueOnce(from([bankStatements]));
+				vi.spyOn(service, 'getBankStatementByPeriodRutAndFolio').mockReturnValueOnce(from([bankStatements]));
 				const result = await lastValueFrom(service.getBankStatementByPeriodRutAndFolio(request));
 
 				expect(result).toBeDefined();
@@ -383,9 +420,9 @@ describe('BankStatementService', () => {
 				expect(result[0]).toEqual(bankStatements[0]);
 			});
 
-			it('[ERROR] should throw an error if rut is not valid - [findByPeriodAndRut]', async () => {
+			it.concurrent('[ERROR] should throw an error if rut is not valid - [findByPeriodAndRut]', async () => {
 				try {
-					jest.spyOn(service, 'findByPeriodAndRut').mockImplementation(() => {
+					vi.spyOn(service, 'findByPeriodAndRut').mockImplementation(() => {
 						throw new BadRequestException('Rut is not valid');
 					});
 
@@ -397,7 +434,7 @@ describe('BankStatementService', () => {
 				}
 			});
 
-			it('[OK] should find bankStatement by folio and rut [findByPeriodAndRut]', async () => {
+			it.concurrent('[OK] should find bankStatement by period and rut [findByPeriodAndRut]', async () => {
 				const bankStatements = [
 					createBankStatement({
 						folio: request.folio,
@@ -406,25 +443,34 @@ describe('BankStatementService', () => {
 					}),
 				];
 
-				jest.spyOn(service, 'findByPeriodAndRut').mockReturnValueOnce(from([bankStatements]));
+				const spy = vi.spyOn(service, 'findByPeriodAndRut').mockReturnValueOnce(from([bankStatements]));
 
-				const result = await lastValueFrom(service.findByPeriodAndRut(request.period, request.rut, request.options));
+				const result = service.findByPeriodAndRut(request.period, request.rut, request.options);
 
-				expect(jest.spyOn(service, 'findByPeriodAndRut')).toBeCalledTimes(1);
 				expect(result).toBeDefined();
-				expect(result).toBeInstanceOf(Array);
-				expect(result[0]).toBeInstanceOf(BankStatement);
-				expect(result[0]).toEqual(bankStatements[0]);
+				expect(spy).toHaveBeenCalledTimes(1);
+
+				spy.mockReturnValueOnce(from([bankStatements]));
+				expect(result).toBeInstanceOf(Observable);
+
+				const item = await lastValueFrom(service.findByPeriodAndRut(request.period, request.rut, request.options));
+
+				expect(item).toBeInstanceOf(Array);
+				expect(item[0]).toBeInstanceOf(BankStatement);
+				expect(item[0]).toEqual(bankStatements[0]);
+
+				expect(spy).toHaveBeenCalledTimes(2);
 			});
 
-			it('[OK] should return a empty array (bank statement not found) - [findByPeriodAndRut]', async () => {
+			it.concurrent('[OK] should return a empty array (bank statement not found) - [findByPeriodAndRut]', async () => {
 				const bankStatements: BankStatement[] = [];
 
-				jest.spyOn(service, 'findByPeriodAndRut').mockReturnValueOnce(from([bankStatements]));
+				const spy = vi.spyOn(service, 'findByPeriodAndRut').mockReturnValueOnce(from([bankStatements]));
 
 				const result = await lastValueFrom(service.findByPeriodAndRut(request.period, request.rut, request.options));
 
-				expect(jest.spyOn(service, 'findByPeriodAndRut')).toBeCalledTimes(1);
+				expect(spy).toBeCalledTimes(1);
+
 				expect(result).toBeDefined();
 				expect(result).toBeInstanceOf(Array);
 				expect(result).toHaveLength(0);
@@ -442,20 +488,33 @@ describe('BankStatementService', () => {
 			};
 			process.env.LOG_LEVEL = 'info';
 
-			it('[OK] should works properly returning no matched cartolas', async () => {
-				const bankStatements: BankStatement[] = [];
+			it.concurrent('[OK] should works properly returning no matched cartolas', async () => {
+				const emptyBankStatementList: BankStatement[] = [];
 
-				jest.spyOn(service, 'findByPeriodRutAndFolio').mockReturnValueOnce(from([bankStatements]));
+				const mError = new BadRequestException('no elements in sequence');
 
-				const result = await lastValueFrom(service.findByPeriodRutAndFolio(request.period, request.rut, request.folio, request.options));
+				const spy = vi.spyOn(service, 'findByPeriodAndRut').mockRejectedValueOnce(mError);
 
-				expect(jest.spyOn(service, 'findByPeriodRutAndFolio')).toBeCalledTimes(1);
+				const result = service.findByPeriodAndRut(request.period, String(request.rut), request.options);
+
 				expect(result).toBeDefined();
-				expect(result).toBeInstanceOf(Array);
-				expect(result).toHaveLength(0);
+
+				spy.mockReturnValueOnce(from([emptyBankStatementList]));
+
+				expect(result).rejects.toThrow(mError);
+
+				expect(spy).toHaveBeenCalledTimes(1);
+
+				/* 	try {
+					await lastValueFrom(result);
+				} catch (error: any) {
+					expect(error.status).toBe(HttpStatus.BAD_REQUEST);
+					expect(error.message).toBe('Rut is not valid');
+					expect(error.name).toBe(BadRequestException.name);
+				} */
 			});
 
-			it('[OK] should works properly returning one match', async () => {
+			it.concurrent('[OK] should works properly returning one match', async () => {
 				const bankStatements = [
 					createBankStatement({
 						base64: request.options.base64,
@@ -465,16 +524,35 @@ describe('BankStatementService', () => {
 					}),
 				];
 
-				jest.spyOn(service, 'findByPeriodRutAndFolio').mockReturnValueOnce(from([bankStatements]));
+				const spy = vi.spyOn(service, 'findByPeriodRutAndFolio').mockReturnValueOnce(from([bankStatements]));
 
 				const result = await lastValueFrom(service.findByPeriodRutAndFolio(request.period, request.rut, request.folio, request.options));
 
-				expect(jest.spyOn(service, 'findByPeriodRutAndFolio')).toBeCalledTimes(1);
+				expect(result).toEqual(bankStatements);
+
+				expect(spy).toHaveBeenCalledTimes(1);
+				expect(spy).toHaveBeenCalledWith(request.period, request.rut, request.folio, request.options);
+
+				spy.mockImplementationOnce(() => {
+					throw new BadRequestException('Rut is not valid');
+				});
+
+				// evaluate the error
+				try {
+					await lastValueFrom(service.findByPeriodRutAndFolio(request.period, request.rut, request.folio, request.options));
+				} catch (error: any) {
+					expect(error.status).toBe(HttpStatus.BAD_REQUEST);
+					expect(error.message).toBe('Rut is not valid');
+					expect(error.name).toBe(BadRequestException.name);
+				}
+
+				expect(spy).toHaveBeenCalledTimes(2);
+
+				spy.mockReturnValueOnce(from([bankStatements]));
+
 				expect(result).toBeDefined();
 				expect(result).toBeInstanceOf(Array);
 				expect(result).toHaveLength(1);
-
-				expect(result[0]).toBe(bankStatements[0]);
 			});
 		});
 	});

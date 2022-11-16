@@ -1,4 +1,5 @@
 import { ArgumentMetadata, GoneException, HttpStatus } from '@nestjs/common';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CustomParseBoolPipe } from './bool.pipe';
 

@@ -1,14 +1,9 @@
 import { faker } from '@faker-js/faker';
-
-import { AcquireWithBase64, BankStatement } from '@ccla/api/modules/bank-statement/entities';
+import { isEmpty } from 'lodash';
 
 import { FakeCreateBankStatementOptions } from '../types';
+import { AcquireWithBase64, BankStatement } from './../../src/api/modules/bank-statement/entities';
 import { parseStrToBase64 } from './parseStringToBase64.helper';
-
-// validate if a string, number or boolean is empty.
-function isEmpty(value: any): boolean {
-	return !!value;
-}
 
 export function createBankStatement(options?: FakeCreateBankStatementOptions): BankStatement | AcquireWithBase64 {
 	const {
