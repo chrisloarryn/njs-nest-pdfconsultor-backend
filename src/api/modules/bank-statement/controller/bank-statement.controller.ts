@@ -4,9 +4,9 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Observable } from 'rxjs';
 import { Logger } from 'winston';
 
-import { CustomParseBoolPipe } from '@ccla/api/common/pipes/bool.pipe';
-import { AcquireBankStatementUrl, AcquireWithBase64 } from '@ccla/api/modules/bank-statement/entities';
-import { BankStatementService } from '@ccla/api/modules/bank-statement/service/bank-statement.service';
+import { CustomParseBoolPipe } from './../../../common/pipes/bool.pipe';
+import { AcquireBankStatementUrl, AcquireWithBase64 } from './../../../modules/bank-statement/entities';
+import { BankStatementService } from './../../../modules/bank-statement/service/bank-statement.service';
 
 @ApiTags('BankStatement Postgresql')
 @Controller('bank-statements')

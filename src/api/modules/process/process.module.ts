@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { BankStatement } from './../bank-statement/entities';
+import { Process } from './../process/entities/process.entity';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([BankStatement])],
+	imports: [TypeOrmModule.forFeature([Process])],
 })
-export class BankStatementModule {}
+export class ProcessModule {}

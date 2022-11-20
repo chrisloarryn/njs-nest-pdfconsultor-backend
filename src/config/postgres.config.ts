@@ -2,7 +2,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 import Joi from 'joi';
 
-import { ErrorConfigIsNotDefined } from '@ccla/api/common/constants/errorConstants';
+import { ErrorConfigIsNotDefined } from './../api/common/constants/errorConstants';
 
 export class PostgresConfig implements TypeOrmOptionsFactory {
 	postgresConfig: TypeOrmModuleOptions | undefined;

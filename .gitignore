@@ -252,3 +252,12 @@ $RECYCLE.BIN/
 # and uncomment the following lines
 # .pnp.*
 .idea/
+
+
+# sonarqube
+test-report.xml
+eslint-report.json
+/.scannerwork
+junit-test-results.xml
+json-test-results.json
+test-results.xml

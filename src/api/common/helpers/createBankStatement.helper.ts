@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { isEmpty, isDate, isNumber } from 'lodash';
 
-import { AcquireBankStatementUrl, AcquireWithBase64, BankStatement } from '../../modules/bank-statement/entities';
+import { AcquireBankStatementUrl, AcquireWithBase64, BankStatement } from './../../modules/bank-statement/entities';
 import { FakeCreateBankStatementOptions } from './../types/create.type';
 import { parseStrToBase64 } from './parseStringToBase64.helper';
 
