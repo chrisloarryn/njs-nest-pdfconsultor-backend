@@ -2,9 +2,9 @@ import('reflect-metadata');
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { BankStatement } from '../bank-statement/entities';
+import { Product } from './entities/product.entity';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([BankStatement])],
+	imports: [TypeOrmModule.forFeature([Product])],
 })
-export class BankStatementModule {}
+export class ProductModule {}

@@ -6,7 +6,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
 	plugins: [tsPaths()],
 	test: {
-		include: ['src/**/*.spec.ts', './test/helpers/*.spec.ts'],
+		include: ['src/**/*.spec.ts'],
 		exclude: [
 			'**/node_modules/**',
 			'**/dist/**',
@@ -27,17 +27,17 @@ export default defineConfig({
 		},
 		coverage: {
 			provider: 'istanbul',
-			reporter: ['text', 'text-summary', 'json', 'html', 'json-summary', 'json', 'text-summary', 'cobertura'],
+			reporter: ['text', 'text-summary', 'json', 'html', 'json-summary', 'cobertura', 'lcov'],
 			watermarks: {
-				statements: [50, 80],
-				branches: [50, 80],
-				functions: [50, 80],
-				lines: [50, 80],
+				statements: [80, 95],
+				branches: [80, 95],
+				functions: [80, 95],
+				lines: [80, 95],
 			},
-			branches: 80,
-			functions: 80,
-			lines: 80,
-			statements: 80,
+			branches: 90,
+			functions: 90,
+			lines: 90,
+			statements: 90,
 
 			// clean: true,
 			exclude: [
@@ -55,7 +55,12 @@ export default defineConfig({
 			],
 		},
 		globals: true,
-
+		/* reporters: ['json', 'junit', 'verbose', 'dot', 'vitest-sonar-reporter'],
+		outputFile: {
+			json: 'json-test-results.json',
+			junit: 'junit-test-results.xml',
+			'vitest-sonar-reporter': 'test-results.xml',
+		}, */
 		/* plugins: [
 			AutoImport({
 				imports: ['vitest'],

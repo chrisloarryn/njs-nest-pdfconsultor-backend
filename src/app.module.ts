@@ -6,16 +6,16 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
 import { WinstonModule } from 'nest-winston';
 
-import { dotEnvOptions } from '@ccla/api/common/utils/dotenv-options';
-import { HealthController } from '@ccla/api/common/utils/health.controller';
-import { BankStatementModule } from '@ccla/api/modules/bank-statement/bank-statement.module';
-import { BankStatement } from '@ccla/api/modules/bank-statement/entities/bank-statement.entity';
-import { Process } from '@ccla/api/modules/process/entities/process.entity';
-import { Product } from '@ccla/api/modules/product/entities/product.entity';
-import { HttpConfig } from '@ccla/config/http.config';
-import { LoggerConfig } from '@ccla/config/loggerConfig';
-import pgConfig from '@ccla/config/pg.config';
-import { PostgresConfig } from '@ccla/config/postgres.config';
+import { dotEnvOptions } from './api/common/utils/dotenv-options';
+import { HealthController } from './api/common/utils/health.controller';
+import { BankStatementModule } from './api/modules/bank-statement/bank-statement.module';
+import { BankStatement } from './api/modules/bank-statement/entities/bank-statement.entity';
+import { Process } from './api/modules/process/entities/process.entity';
+import { Product } from './api/modules/product/entities/product.entity';
+import { HttpConfig } from './config/http.config';
+import { LoggerConfig } from './config/loggerConfig';
+import pgConfig from './config/pg.config';
+import { PostgresConfig } from './config/postgres.config';
 
 dotenv.config({ path: dotEnvOptions.path });
 

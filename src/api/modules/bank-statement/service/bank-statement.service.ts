@@ -2,8 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import pdf2base64 from 'pdf-to-base64';
 import { catchError, from, map, Observable, retry } from 'rxjs';
 
-import { ErrorFetchingData, ErrorFetchingPdfFromURL } from '@ccla/api/common/constants/errorConstants';
-
+import { ErrorFetchingData, ErrorFetchingPdfFromURL } from './../../../common/constants/errorConstants';
 import { ValidadorRut } from './../../../common/utils/validador-rut';
 import { BankStatementAdditionalInfoDTO } from './../dto/b64.bank-statement.dto';
 import { AcquireBankStatementUrl, AcquireWithBase64 } from './../entities';
