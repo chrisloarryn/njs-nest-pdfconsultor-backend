@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { instanceToPlain } from 'class-transformer';
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
 
-import { BankStatement } from './../../bank-statement/entities';
+import { BankStatement } from './../../bank-statement/entities/bank-statement.entity';
 
 @Entity('procesos', { schema: 'public' })
 export class Process {
@@ -30,11 +30,19 @@ export class Process {
 
 	// datetime
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Fecha Inicial Periodo', type: 'datetime' })
+	@Column({
+		nullable: true,
+		comment: 'Fecha Inicial Periodo',
+		type: 'timestamp',
+	})
 	prc_fch_desde: Date;
 
 	@ApiProperty()
-	@Column({ nullable: true, comment: 'Fecha Final Periodo', type: 'datetime' })
+	@Column({
+		nullable: true,
+		comment: 'Fecha Final Periodo',
+		type: 'timestamp',
+	})
 	prc_fch_hasta: Date;
 
 	@ApiProperty()

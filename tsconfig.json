@@ -3,6 +3,7 @@
 		"module": "commonjs",
 		"declaration": true,
 		"removeComments": true,
+		"allowJs": true,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"allowSyntheticDefaultImports": true,
@@ -17,12 +18,14 @@
 		"skipLibCheck": true,
 		"esModuleInterop": true,
 		"types": [
-			"vitest/globals"
+			"vitest/globals",
+			"jest"
 		],
 		"typeRoots": [
 			"node_modules/@types",
 			"src/api/types",
-			"vitest/globals"
+			"vitest/globals",
+			"vitest/types",
 		],
 		"paths": {
 			"@ccla/*": [

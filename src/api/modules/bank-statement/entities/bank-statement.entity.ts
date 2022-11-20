@@ -59,11 +59,11 @@ export class BankStatement {
 	version: number;
 
 	@ApiProperty()
-	@CreateDateColumn({ comment: 'Fecha de creación de Cartola', type: 'datetime' })
+	@CreateDateColumn({ comment: 'Fecha de creación de Cartola', type: 'date' })
 	created_at: Date;
 
 	@ApiProperty()
-	@UpdateDateColumn({ comment: 'Fecha de actualización de Cartola', type: 'datetime' })
+	@UpdateDateColumn({ comment: 'Fecha de actualización de Cartola', type: 'date' })
 	updated_at: Date;
 
 	// methods
