@@ -17,7 +17,7 @@ echo '🎉 No error found in style, you can commit 🎉'
 # Check if there is any error in the code running the tests
 echo '🏗️👷 Running tests before committing👷‍♂️🏗️'
 echo 'please be patient, this may take a while...'
-yarn test ||
+yarn test:run ||
 (
     echo '🔨❌ Yoo, you have a problem in your code. Check tests 🔨❌
           Run yarn test, add changes and try commit again.';

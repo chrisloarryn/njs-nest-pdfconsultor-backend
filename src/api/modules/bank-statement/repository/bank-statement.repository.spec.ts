@@ -6,9 +6,9 @@ import { from, lastValueFrom } from 'rxjs';
 import { Repository } from 'typeorm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createBankStatement } from '../../../../../test/helpers/createBankStatement.helper';
+import { ErrorNoOccurrencesFound } from '../../../common/constants/errorConstants';
+import { createBankStatement } from '../../../common/helpers/createBankStatement.helper';
 import { BankStatement } from '../entities';
-import { ErrorNoOccurrencesFound } from './../../../../../test/constants/errorConstants';
 import { LoggerConfig } from './../../../../config';
 import { BankStatementRepository } from './../repository';
 

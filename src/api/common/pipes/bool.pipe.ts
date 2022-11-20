@@ -1,4 +1,4 @@
-import { Injectable, PipeTransform, Optional, HttpStatus, ArgumentMetadata } from '@nestjs/common';
+import { Injectable, PipeTransform, Optional, HttpStatus } from '@nestjs/common';
 import { ErrorHttpStatusCode, HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
 
 export interface ParseBoolPipeOptions {
@@ -33,7 +33,7 @@ export class CustomParseBoolPipe implements PipeTransform<AvailableCustomBoolPip
 	 * @param value currently processed route argument
 	 * @param metadata contains metadata about the currently processed route argument
 	 */
-	async transform(value: AvailableCustomBoolPipeTypes | AvailableCustomBoolPipeArrayTypes, metadata: ArgumentMetadata): Promise<boolean> {
+	async transform(value: AvailableCustomBoolPipeTypes | AvailableCustomBoolPipeArrayTypes): Promise<boolean> {
 		let result: AvailableCustomBoolPipeTypes;
 
 		if (Array.isArray(value)) {

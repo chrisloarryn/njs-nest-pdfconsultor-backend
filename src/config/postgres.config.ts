@@ -1,11 +1,14 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 import Joi from 'joi';
+
+import { ErrorConfigIsNotDefined } from '@ccla/api/common/constants/errorConstants';
 
 export class PostgresConfig implements TypeOrmOptionsFactory {
 	postgresConfig: TypeOrmModuleOptions | undefined;
 
 	constructor(options?: TypeOrmModuleOptions) {
-		if (!options) throw new Error('Postgres config is not defined');
+		if (!options) throw new InternalServerErrorException(ErrorConfigIsNotDefined);
 		this.postgresConfig = options;
 	}
 	createTypeOrmOptions(connectionName?: string | undefined): TypeOrmModuleOptions | Promise<TypeOrmModuleOptions> {
@@ -17,7 +20,7 @@ export class PostgresConfig implements TypeOrmOptionsFactory {
 
 	validate() {
 		if (!this.postgresConfig) {
-			throw new Error('Postgres config is not defined');
+			throw new InternalServerErrorException(ErrorConfigIsNotDefined);
 		}
 		const envConfig = this.validateInput(this.postgresConfig);
 		const postgresConfig: TypeOrmModuleOptions = envConfig;
@@ -44,7 +47,7 @@ export class PostgresConfig implements TypeOrmOptionsFactory {
 
 		const { error, value: validatedEnvConfig } = envVarsSchema.validate(envConfig);
 		if (error) {
-			throw new Error(`Config validation error: ${error.message}`);
+			throw new InternalServerErrorException(`Config validation error: ${error.message}`);
 		}
 		return validatedEnvConfig;
 	}

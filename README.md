@@ -373,42 +373,42 @@ En main.ts se encuentra una función asyncrona, que arrancará el microservicio.
 
 ```ts
 async function bootstrap() {
+	const logger: LoggerConfig = new LoggerConfig();
 
-  const logger: LoggerConfig = new LoggerConfig();
+	const configSwagger = new DocumentBuilder()
+		.setTitle(process.env.SWAGGER_NAME || process.env['SWAGGER_NAME'])
+		.setDescription(process.env.SWAGGER_DESCRIPTION || process.env['SWAGGER_DESCRIPTION'])
+		.setVersion(process.env.SWAGGER_VERSION || process.env['SWAGGER_VERSION'])
+		.setContact(
+			process.env.SWAGGER_CONTACT_NAME || process.env['SWAGGER_CONTACT_NAME'],
+			'',
+			process.env.SWAGGER_CONTACT_EMAIL || process.env['SWAGGER_CONTACT_EMAIL'],
+		)
+		.build();
 
-  const configSwagger = new DocumentBuilder()
-    .setTitle(process.env.SWAGGER_NAME || process.env['SWAGGER_NAME'])
-    .setDescription(process.env.SWAGGER_DESCRIPTION || process.env['SWAGGER_DESCRIPTION'])
-    .setVersion(process.env.SWAGGER_VERSION || process.env['SWAGGER_VERSION'])
-    .setContact(process.env.SWAGGER_CONTACT_NAME || process.env['SWAGGER_CONTACT_NAME'], "",
-      process.env.SWAGGER_CONTACT_EMAIL ||
-      process.env['SWAGGER_CONTACT_EMAIL'])
-    .build();
+	const winstonLogger = WinstonModule.createLogger(logger.console());
 
-  const winstonLogger = WinstonModule.createLogger(logger.console());
+	const app = await NestFactory.create(AppModule, {
+		logger: winstonLogger,
+	});
 
-  const app = await NestFactory.create(AppModule, {
-    logger: winstonLogger,
-  });
+	winstonLogger.log('Preparing msusecases-backend application');
 
-  winstonLogger.log('Preparing msusecases-backend application');
+	if (process.env.NODE_ENV || process.env['NODE_ENV'] !== 'production') {
+		const document = SwaggerModule.createDocument(app, configSwagger);
+		SwaggerModule.setup(process.env.GLOBAL_PREFIX + '/' + process.env.SWAGGER_URL, app, document);
+	}
 
-  if (process.env.NODE_ENV || process.env['NODE_ENV'] !== 'production') {
-    const document = SwaggerModule.createDocument(app, configSwagger);
-    SwaggerModule.setup(process.env.GLOBAL_PREFIX + '/' + process.env.SWAGGER_URL, app, document);
-  }
+	app.useGlobalFilters(new HttpExceptionFilter());
+	app.useGlobalPipes(new ValidationPipe());
+	app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+	app.setGlobalPrefix(process.env.GLOBAL_PREFIX || 'msusecases/v1');
+	await app.listen(process.env.PORT);
 
-  app.useGlobalFilters(new HttpExceptionFilter);
-  app.useGlobalPipes(new ValidationPipe());
-  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  app.setGlobalPrefix(process.env.GLOBAL_PREFIX || 'msusecases/v1');
-  await app.listen(process.env.PORT);
-
-  if (module.hot) {
-    module.hot.accept();
-    module.hot.dispose(() => app.close())
-  }
-
+	if (module.hot) {
+		module.hot.accept();
+		module.hot.dispose(() => app.close());
+	}
 }
 
 bootstrap();
@@ -442,27 +442,24 @@ const postgresOptions: PostgresConfig = new PostgresConfig();
 const http: HttpConfig = new HttpConfig();
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true
-    }),
-    WinstonModule.forRoot(logger.console()),
-    TypeOrmModule.forRoot(postgresOptions.getOptions()),
-    TypeOrmModule.forFeature([User]),
-    InMemoryDBModule.forRoot({}),
-    HttpModule.register(http.getOptions()),
-    TerminusModule,
-    
-  ],
-  controllers: [UserController, UserMemoryController, PostController, HealthController],
-  providers: [UserService, PostService, UserMemoryService, UserRepository],
+	imports: [
+		ConfigModule.forRoot({
+			isGlobal: true,
+		}),
+		WinstonModule.forRoot(logger.console()),
+		TypeOrmModule.forRoot(postgresOptions.getOptions()),
+		TypeOrmModule.forFeature([User]),
+		InMemoryDBModule.forRoot({}),
+		HttpModule.register(http.getOptions()),
+		TerminusModule,
+	],
+	controllers: [UserController, UserMemoryController, PostController, HealthController],
+	providers: [UserService, PostService, UserMemoryService, UserRepository],
 })
 export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggerMiddleware)
-      .forRoutes(UserController, UserMemoryController);
-  }
+	configure(consumer: MiddlewareConsumer) {
+		consumer.apply(LoggerMiddleware).forRoutes(UserController, UserMemoryController);
+	}
 }
 ```
 
@@ -541,15 +538,15 @@ Dentro del arquetipo se realizan dos conexiones a base de datos las cuales son l
 
 ```ts
 this.options = {
-  type: 'postgres',
-  host: process.env.POSTGRES_HOST,
-  port: process.env.POSTGRES_PORT,
-  username: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASS,
-  database: process.env.POSTGRES_DB,
-  synchronize: true,
-  entities: [User],
-  keepConnectionAlive: true,
+	type: 'postgres',
+	host: process.env.POSTGRES_HOST,
+	port: process.env.POSTGRES_PORT,
+	username: process.env.POSTGRES_USER,
+	password: process.env.POSTGRES_PASS,
+	database: process.env.POSTGRES_DB,
+	synchronize: true,
+	entities: [User],
+	keepConnectionAlive: true,
 };
 ```
 
@@ -680,13 +677,15 @@ Un microservicio bien diseñado puede hacer maravillas para la adopción y el co
 
 ```ts
 const configSwagger = new DocumentBuilder()
-    .setTitle(process.env.SWAGGER_NAME || process.env['SWAGGER_NAME'])
-    .setDescription(process.env.SWAGGER_DESCRIPTION || process.env['SWAGGER_DESCRIPTION'])
-    .setVersion(process.env.SWAGGER_VERSION || process.env['SWAGGER_VERSION'])
-    .setContact(process.env.SWAGGER_CONTACT_NAME || process.env['SWAGGER_CONTACT_NAME'], "",
-      process.env.SWAGGER_CONTACT_EMAIL ||
-      process.env['SWAGGER_CONTACT_EMAIL'])
-    .build();
+	.setTitle(process.env.SWAGGER_NAME || process.env['SWAGGER_NAME'])
+	.setDescription(process.env.SWAGGER_DESCRIPTION || process.env['SWAGGER_DESCRIPTION'])
+	.setVersion(process.env.SWAGGER_VERSION || process.env['SWAGGER_VERSION'])
+	.setContact(
+		process.env.SWAGGER_CONTACT_NAME || process.env['SWAGGER_CONTACT_NAME'],
+		'',
+		process.env.SWAGGER_CONTACT_EMAIL || process.env['SWAGGER_CONTACT_EMAIL'],
+	)
+	.build();
 ```
 
 - Para generar una documentación precisa utilizar los decoradores de swagger en las clases que corresponda, para ello leer la documentación oficial de [NestJs Open Api][nest_swagger_url].
@@ -694,11 +693,10 @@ const configSwagger = new DocumentBuilder()
 - Para visualizar el documento swagger de manera local, una vez levantado el microservicio ir al path `/api` en tu navegador. En caso de querer cambiar esta dirección configurar en el archivo `main.ts`.
 
 ```ts
-  if (process.env.NODE_ENV || process.env['NODE_ENV'] !== 'production') {
-    const document = SwaggerModule.createDocument(app, configSwagger);
-    SwaggerModule.setup('api', app, document);
-  }
-
+if (process.env.NODE_ENV || process.env['NODE_ENV'] !== 'production') {
+	const document = SwaggerModule.createDocument(app, configSwagger);
+	SwaggerModule.setup('api', app, document);
+}
 ```
 
 ### Manejo de errores
@@ -707,12 +705,13 @@ Para el manejo de errores se utilizo una capa de excepciones integrada dentro de
 
 - Permite estructurar el response ante una excepcion, por defecto posee la siguiente estructura:
 - Considerar que "objError" representa el objeto de la clase ubicada en `src/api/responses/error.response.ts`
+
 ```json
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "Esquema JSON de respuesta para casos de Error o Falla.",
-  "type": "object",
-  "properties": "objError"
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"description": "Esquema JSON de respuesta para casos de Error o Falla.",
+	"type": "object",
+	"properties": "objError"
 }
 ```
 
@@ -745,7 +744,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
 ### Logs
 
-Para los logs se utilizo la libreria [Winston][winston_url]  las cuál eestá diseñada para ser una biblioteca de registro simple y universal con soporte para múltiples transportes y [@google-cloud/logging-winston][gcp_logging_winston] la cual nos permite configurar parametros para nuestro registro en GCP. Las configuraciones de la libreria están ubicadas en el directorio `src/config/loggerConfig.ts`, de las cuales destacan:
+Para los logs se utilizo la libreria [Winston][winston_url] las cuál eestá diseñada para ser una biblioteca de registro simple y universal con soporte para múltiples transportes y [@google-cloud/logging-winston][gcp_logging_winston] la cual nos permite configurar parametros para nuestro registro en GCP. Las configuraciones de la libreria están ubicadas en el directorio `src/config/loggerConfig.ts`, de las cuales destacan:
 
 - Se estructura la respuesta del log con el formato `${msg.timestamp} [${msg.level}] - ${msg.message}`. Ejempo:
 
@@ -754,54 +753,53 @@ Para los logs se utilizo la libreria [Winston][winston_url]  las cuál eestá di
 2022-01-19T16:08:03.969Z [info] - Nest application successfully started
 2022-01-19T16:09:43.022Z [debug] - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/...
 ```
+
 - Se valida el ambiente en el que se esta trabajando para configurar el log correspondiente
 
 - Se selecciona el tipo de transporte de los logs.
 
 ```ts
 export class LoggerConfig {
-  private readonly options: winston.LoggerOptions;
-  
-  constructor() {
+	private readonly options: winston.LoggerOptions;
 
-    const {LoggingWinston} = require('@google-cloud/logging-winston');
+	constructor() {
+		const { LoggingWinston } = require('@google-cloud/logging-winston');
 
-    const transportsList = [];
+		const transportsList = [];
 
-    transportsList.push(new transports.Console({ level: process.env.LOG_LEVEL })); // alert > error > warning > notice > info > debug
-    transportsList.push(new transports.File({filename: 'dist/logs/error.log', level: 'error'}));
-    transportsList.push(new transports.File({filename: 'dist/logs/logger.log'}));
+		transportsList.push(new transports.Console({ level: process.env.LOG_LEVEL })); // alert > error > warning > notice > info > debug
+		transportsList.push(new transports.File({ filename: 'dist/logs/error.log', level: 'error' }));
+		transportsList.push(new transports.File({ filename: 'dist/logs/logger.log' }));
 
-    if (process.env.LOG_ENV && process.env.LOG_ENV != 'feature') {
-      const loggingWinston = new LoggingWinston({
-        projectId: process.env.GCP_PROJECT_ID,
-        keyFilename: path.join(process.cwd(), `keys/${process.env.GCP_KEY_JSON}`),
-        prefix: process.env.LOG_SERVICE || 'msusecases_services',
-        logName: process.env.LOG_NAME || 'msusecases_log',
-        redirectToStdout: true //comment this line for local tests on GCP
-      });
-      transportsList.push(loggingWinston);
-    }
+		if (process.env.LOG_ENV && process.env.LOG_ENV != 'feature') {
+			const loggingWinston = new LoggingWinston({
+				projectId: process.env.GCP_PROJECT_ID,
+				keyFilename: path.join(process.cwd(), `keys/${process.env.GCP_KEY_JSON}`),
+				prefix: process.env.LOG_SERVICE || 'msusecases_services',
+				logName: process.env.LOG_NAME || 'msusecases_log',
+				redirectToStdout: true, //comment this line for local tests on GCP
+			});
+			transportsList.push(loggingWinston);
+		}
 
-    this.options = {
-      exitOnError: false,
-      format: format.combine(
-        format.colorize(),
-        format.timestamp(),
-        format.printf((msg) => {
-          return `${msg.timestamp} [${msg.level}] - ${msg.message}`;
-        }),
-      ),
-      transports: transportsList
-    };
+		this.options = {
+			exitOnError: false,
+			format: format.combine(
+				format.colorize(),
+				format.timestamp(),
+				format.printf((msg) => {
+					return `${msg.timestamp} [${msg.level}] - ${msg.message}`;
+				}),
+			),
+			transports: transportsList,
+		};
 
-    loggers.add('winston-logger', this.options);
-  }
+		loggers.add('winston-logger', this.options);
+	}
 
-  public console() {
-    return this.options;
-  }
-  
+	public console() {
+		return this.options;
+	}
 }
 ```
 
@@ -822,17 +820,17 @@ yarn test
 - Aquí se muestra un test unitario al método create en el controller.
 
 ```ts
-it("should create a user", () => {
-  const createUserDto = {
-    name: "testing",
-    lastname: "lasttesting",
-    email: "test@example.com",
-  };
+it('should create a user', () => {
+	const createUserDto = {
+		name: 'testing',
+		lastname: 'lasttesting',
+		email: 'test@example.com',
+	};
 
-  expect(userController.create(createUserDto)).toEqual({
-    id: expect.any(Number),
-    ...createUserDto,
-  });
+	expect(userController.create(createUserDto)).toEqual({
+		id: expect.any(Number),
+		...createUserDto,
+	});
 });
 ```
 
@@ -841,6 +839,7 @@ it("should create a user", () => {
 Esta prueba se encuentra en el directorio `test/app.e2e-spec.ts`. Para mayor detalle consultar en la documentación oficial de [NestJs][nestjs_url_test] .
 
 Considerar utilizar una configuracion similar a la siguiente:
+
 ```ts
 ...
 beforeEach(async () => {
@@ -863,12 +862,8 @@ $ yarn test:e2e
 - Aqui se muestra un test e2e al método encargado del path `/example/v1/users/`.
 
 ```ts
-it("/ (GET)", () => {
-  return request(app.getHttpServer())
-    .get("/example/v1/users/")
-    .expect(200)
-    .expect("Content-Type", /json/)
-    .expect(mockUser);
+it('/ (GET)', () => {
+	return request(app.getHttpServer()).get('/example/v1/users/').expect(200).expect('Content-Type', /json/).expect(mockUser);
 });
 ```
 
@@ -911,7 +906,8 @@ Para ver los métodos utilizados leer el apartado dejado en la documentacion de 
 
 **Importante** este arquetipo utiliza secrets.
 
-**Importante** los diferentes proyectos utilizando este arquetipo, deberan utilizar la siguiente estructura para su propio readme: 
+**Importante** los diferentes proyectos utilizando este arquetipo, deberan utilizar la siguiente estructura para su propio readme:
+
 ```readme
 # API NOMBRE-API
 ## Descripcion

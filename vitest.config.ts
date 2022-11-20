@@ -6,7 +6,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
 	plugins: [tsPaths()],
 	test: {
-		include: ['src/**/*.spec.ts'],
+		include: ['src/**/*.spec.ts', './test/helpers/*.spec.ts'],
 		exclude: [
 			'**/node_modules/**',
 			'**/dist/**',
@@ -19,6 +19,7 @@ export default defineConfig({
 			'./src/api/modules/bank-statement/entities/bank-statement.entity.ts',
 			'./src/config/http.config.ts',
 			'**/src/api/common/utils/validador-rut.ts',
+			'./src/config/loggerConfig.ts',
 		],
 		alias: {
 			'@ccla': 'src',
@@ -26,8 +27,7 @@ export default defineConfig({
 		},
 		coverage: {
 			provider: 'istanbul',
-			reporter: ['text', 'json', 'html'],
-			/* 
+			reporter: ['text', 'json', 'html', 'json-summary', 'text-summary', 'cobertura'],
 			watermarks: {
 				statements: [50, 80],
 				branches: [50, 80],
@@ -38,7 +38,7 @@ export default defineConfig({
 			functions: 80,
 			lines: 80,
 			statements: 80,
-			*/
+
 			// clean: true,
 			exclude: [
 				'**/node_modules/**',
@@ -48,6 +48,7 @@ export default defineConfig({
 				'**/src/api/modules/process/entities/process.entity.ts',
 				'**/src/api/modules/bank-statement/entities/bank-statement.entity.ts',
 				'**/src/config/http.config.ts',
+				'**/src/config/loggerConfig.ts',
 				'**/src/api/common/utils/validador-rut.ts',
 				'**/.{idea,git,cache,output,temp}/**',
 				'**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress}.config.*',

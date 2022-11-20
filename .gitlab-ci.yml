@@ -3,7 +3,63 @@
 # El archivo Dockerfile debe ser capaz de compilar el código
 # El archivo deployment.yml debe ser revisado previamente por el equipo CoE DevSecOps de CCLA
 
-include:
-  - project: 'ccla/devsecops/templates-ci-cd'
-    ref: master
-    file: '/Pipelines/CI/ventas-microservicio-nodejs.yml'
+# include:
+#   - project: 'ccla/devsecops/templates-ci-cd'
+#     ref: master
+#     file: '/Pipelines/CI/ventas-microservicio-nodejs.yml'
+
+image: node:19.0.0
+
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+	script:
+	  - yarn
+	cache:
+	  paths:
+		  - node_modules/
+		artifacts:
+		  expire_in: 1 week
+			when: on_success
+			paths:
+			  - node_modules/
+			
+test:
+  stage: test
+	coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+	dependencies:
+	  - build
+	script:
+		- yarn vi:cov
+	cache:
+	  paths:
+		  - coverage/
+	artifacts:
+	  paths:
+		  - coverage/
+		when: always
+    reports:
+      junit:
+        - junit.xml
+      cobertura: coverage/cobertura-coverage.xml
+
+pages:
+  stage: deploy
+  dependencies:
+    - test
+  script:
+    - mkdir .public
+    - cp -r coverage/* .public
+    - mv .public public
+  artifacts:
+    paths:
+     - public
+  only:
+    - master
+    - qa
+    - dev
+  except:
+    - tags

@@ -19,7 +19,6 @@ export class BankStatementController {
 
 	@ApiOperation({ summary: 'Get BankStatement by processId and folio' })
 	@ApiCreatedResponse({ description: 'Acquire the bank statement url' })
-	// add query params base64
 	@Get('/pdf')
 	@ApiHeader({ name: 'folio', description: 'Folio of the bank statement' })
 	@ApiHeader({ name: 'period', description: 'Period of the bank statement' })
@@ -31,15 +30,15 @@ export class BankStatementController {
 		@Headers('X-Rut') rut: string,
 		@Query('b64', CustomParseBoolPipe) base64: boolean,
 	): Observable<AcquireWithBase64[] | AcquireBankStatementUrl[]> {
-		this.logger.info(`method: getBankStatementByProcessIdAndFolio, req:${period}, ${rut}, ${folio}, ${base64}`);
-		const bankStatements = this.bankStatementService.getBankStatementByPeriodRutAndFolio({
+		this.logger.debug(`method: getBankStatementByProcessIdAndFolio, req:${period}, ${rut}, ${folio}, ${base64}`);
+		const bankStatements = this.bankStatementService.getBankStatementsByPeriodRutAndFolio({
 			period,
 			rut,
 			folio,
 			options: { base64 },
 		});
 		bankStatements.subscribe((bankStatements) => {
-			this.logger.info(`response:${JSON.stringify(bankStatements)}`);
+			this.logger.debug(`response:${JSON.stringify(bankStatements)}`);
 		});
 		return bankStatements;
 	}
