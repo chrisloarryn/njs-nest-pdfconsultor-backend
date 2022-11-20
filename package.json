@@ -17,6 +17,7 @@
 		"lint:fix": "npm run lint -- --fix",
 		"vi:test": "vitest",
 		"vi:cov": "vitest run --coverage --watch",
+		"coverage": "vitest run --coverage",
 		"test": "vitest",
 		"test:run": "vitest --run",
 		"prepare": "husky install && chmod ug+x .husky",

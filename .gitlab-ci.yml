@@ -16,36 +16,36 @@ stages:
 
 build:
   stage: build
-	script:
-	  - yarn
-	cache:
-	  paths:
-		  - node_modules/
-		artifacts:
-		  expire_in: 1 week
-			when: on_success
-			paths:
-			  - node_modules/
-			
+  script:
+    - yarn
+  cache:
+    paths:
+      - node_modules/
+    artifacts:
+      expire_in: 1 week
+      when: on_success
+      paths:
+        - node_modules/
+
 test:
   stage: test
-	coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
-	dependencies:
-	  - build
-	script:
-		- yarn vi:cov
-	cache:
-	  paths:
-		  - coverage/
-	artifacts:
-	  paths:
-		  - coverage/
-		when: always
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+  dependencies:
+    - build
+  script:
+    - yarn vi:cov
+  cache:
+    paths:
+      - coverage/
+  artifacts:
+    paths:
+      - coverage/
+    when: always
     reports:
       junit:
         - junit.xml
-      cobertura: coverage/cobertura-coverage.xml
-
+      codequality:
+        - cobertura-coverage.xml
 pages:
   stage: deploy
   dependencies:

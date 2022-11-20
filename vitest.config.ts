@@ -27,7 +27,7 @@ export default defineConfig({
 		},
 		coverage: {
 			provider: 'istanbul',
-			reporter: ['text', 'json', 'html', 'json-summary', 'text-summary', 'cobertura'],
+			reporter: ['text', 'text-summary', 'json', 'html', 'json-summary', 'json', 'text-summary', 'cobertura'],
 			watermarks: {
 				statements: [50, 80],
 				branches: [50, 80],
