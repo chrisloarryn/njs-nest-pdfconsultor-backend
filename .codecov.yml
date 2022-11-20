@@ -1,0 +1,43 @@
+# For more configuration details:
+# https://docs.codecov.io/docs/codecov-yaml
+
+# Check if this file is valid by running in bash:
+# curl -X POST --data-binary @.codecov.yml https://codecov.io/validate
+
+# Coverage configuration
+# ----------------------
+coverage:
+  status:
+    patch:  # default: off
+      default:
+        target: auto
+        threshold: 0%
+
+  range: 70..90     # First number represents red, and second represents green
+                    # (default is 70..100)
+  round: down       # up, down, or nearest
+  precision: 2      # Number of decimal places, between 0 and 5
+
+# Ignoring Paths
+# --------------
+# which folders/files to ignore
+ignore:
+  - */node_modules/**
+  - */dist/**
+  - */coverage/**'
+  - */src/api/modules/product/entities/product.entity.ts'
+  - /.{idea,git,cache,output,temp}/*
+  - /{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress}.config.*
+  - */src/api/modules/product/entities/product.entity.ts
+  - */src/api/modules/process/entities/process.entity.ts
+  - */src/api/modules/bank-statement/entities/bank-statement.entity.ts
+  - */src/config/http.config.ts
+  - */src/api/common/utils/validador-rut.ts
+  - */src/config/loggerConfig.ts
+
+# Pull request comments:
+# ----------------------
+# Diff is the Coverage Diff of the pull request.
+# Files are the files impacted by the pull request
+comment:
+  layout: diff, files  # accepted in any order: reach, diff, flags, and/or files
