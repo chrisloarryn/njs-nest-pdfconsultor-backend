@@ -1,5 +1,7 @@
 ## Indice
 
+[![codecov](https://codecov.io/gh/chrisloarryn/njs-nest-pdfconsultor-backend/branch/main/graph/badge.svg?token=QQCELF1K7R)](https://codecov.io/gh/chrisloarryn/njs-nest-pdfconsultor-backend)
+
 [TOC]
 
 # Antecedentes Generales
