@@ -30,4 +30,10 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        
+        flags: unittests
+        name: codecov-umbrella
+        verbose: true
+        directory: ./coverage
+        files: ./coverage/cobertura-coverage.xml
+        env_vars: NODE_ENV
+        fail_ci_if_error: true
