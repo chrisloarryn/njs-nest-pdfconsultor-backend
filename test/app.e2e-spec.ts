@@ -29,13 +29,23 @@ describe('Test (e2e)', () => {
 	let app: INestApplication;
 	const controller = BankStatementController;
 
-	const mockedRepo = {
-		getBankStatementsByPeriodRutAndFolio: jest.fn(),
-		getPdfsByPeriodAndRut: jest.fn(),
-		getPdfsByFolioAndRut: jest.fn(),
-		getPdfsByPeriodAndFolio: jest.fn(),
-		getPdfsByFolio: jest.fn(),
-		getPdfsByRut: jest.fn(),
+	const mocks = {
+		mockRepository: {
+			getBankStatementsByPeriodRutAndFolio: jest.fn(),
+			getPdfsByPeriodAndRut: jest.fn(),
+			getPdfsByFolioAndRut: jest.fn(),
+			getPdfsByPeriodAndFolio: jest.fn(),
+			getPdfsByFolio: jest.fn(),
+			getPdfsByRut: jest.fn(),
+		},
+		mockService: {
+			getBankStatementsByPeriodRutAndFolio: jest.fn(),
+			getPdfsByPeriodAndRut: jest.fn(),
+			getPdfsByFolioAndRut: jest.fn(),
+			getPdfsByPeriodAndFolio: jest.fn(),
+			getPdfsByFolio: jest.fn(),
+			getPdfsByRut: jest.fn(),
+		},
 	};
 	function loadConfig(): Promise<void> {
 		return new Promise((resolve, reject) => {
@@ -71,7 +81,16 @@ describe('Test (e2e)', () => {
 		const moduleFixture: TestingModule = await Test.createTestingModule({
 			imports: [AppModule, BankStatementModule],
 			controllers: [BankStatementController],
-			providers: [BankStatementService],
+			providers: [
+				{
+					provide: BankStatementRepository,
+					useValue: mocks.mockRepository,
+				},
+				{
+					provide: BankStatementService,
+					useValue: mocks.mockService,
+				},
+			],
 		}).compile();
 
 		app = moduleFixture.createNestApplication();
