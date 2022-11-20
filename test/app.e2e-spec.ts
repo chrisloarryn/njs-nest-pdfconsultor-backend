@@ -1,87 +1,134 @@
+import { InMemoryDBModule } from '@nestjs-addons/in-memory-db';
 import { HttpStatus, INestApplication } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { TypeOrmDataSourceFactory } from '@nestjs/typeorm';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { WinstonModule } from 'nest-winston';
-import { from, last, map, Observable, toArray } from 'rxjs';
+import { DataType, newDb, IMemoryDb } from 'pg-mem';
 import request from 'supertest';
 
-import { BankStatementController } from '@ccla/api/modules/bank-statement/controller/bank-statement.controller';
-import { parseStrToBase64 } from 'src/api/common/utils/b64.utils';
-
-import { BankStatementRepository } from '../src/api/modules/bank-statement/repository/bank-statement.repository';
 import { LoggerConfig } from '../src/config';
-import { AcquireBankStatementUrl, AcquireWithBase64 } from './../src/api/modules/bank-statement/entities/b64.bank-statement.entity';
-import { BankStatement } from './../src/api/modules/bank-statement/entities/bank-statement.entity';
+import pgConfig from '../src/config/pg.config';
+import { createBankStatement } from './../src/api/common/helpers';
+import { dotEnvOptions } from './../src/api/common/utils';
+import { BankStatementModule } from './../src/api/modules/bank-statement/bank-statement.module';
+import { BankStatementController } from './../src/api/modules/bank-statement/controller/bank-statement.controller';
+import { BankStatement } from './../src/api/modules/bank-statement/entities';
+import { BankStatementRepository } from './../src/api/modules/bank-statement/repository/bank-statement.repository';
+import { BankStatementService } from './../src/api/modules/bank-statement/service';
+import { Process } from './../src/api/modules/process/entities/process.entity';
+import { ProcessModule } from './../src/api/modules/process/process.module';
+import { Product } from './../src/api/modules/product/entities/product.entity';
+import { ProductModule } from './../src/api/modules/product/product.module';
+import { AppModule } from './../src/app.module';
 
 const logger: LoggerConfig = new LoggerConfig();
 
-const isEven = (n: number) => n % 2 === 0;
-
-const makeBankStatement = (i: number): AcquireWithBase64 | AcquireBankStatementUrl => {
-	const url = `car_url${i}`;
-	if (isEven(i)) {
-		//
-		const b64 = parseStrToBase64(url);
-		const bankStatement = new AcquireWithBase64();
-		bankStatement.base64 = b64;
-		bankStatement.car_url = url;
-		bankStatement.car_folio = `car_folio${i}`;
-		bankStatement.prc_id = i;
-		bankStatement.prd_id = `prd_id${i}`;
-		return plainToInstance(AcquireWithBase64, instanceToPlain(bankStatement));
-	}
-
-	const bankStatement = new AcquireBankStatementUrl();
-	bankStatement.car_url = `car_url${i}`;
-	bankStatement.car_folio = `car_folio${i}`;
-	bankStatement.prc_id = i;
-	bankStatement.prd_id = `prd_id${i}`;
-	return plainToInstance(AcquireBankStatementUrl, instanceToPlain(bankStatement));
-};
-
-const randomBSByQuantity = (quantity: number): Observable<AcquireWithBase64[] | AcquireBankStatementUrl[]> =>
-	from(Array(quantity).keys()).pipe(
-		map((i) => makeBankStatement(i + 1)),
-		toArray(),
-	);
-
 describe('Test (e2e)', () => {
 	let app: INestApplication;
-	let mockBankStatement: BankStatement;
+	const controller = BankStatementController;
+
+	const mockedRepo = {
+		getBankStatementsByPeriodRutAndFolio: jest.fn(),
+		getPdfsByPeriodAndRut: jest.fn(),
+		getPdfsByFolioAndRut: jest.fn(),
+		getPdfsByPeriodAndFolio: jest.fn(),
+		getPdfsByFolio: jest.fn(),
+		getPdfsByRut: jest.fn(),
+	};
+	function loadConfig(): Promise<void> {
+		return new Promise((resolve, reject) => {
+			import('dotenv')
+				.then((handler) => {
+					console.log('====================================');
+					console.log({ path: dotEnvOptions.path });
+					console.log('====================================');
+					handler.config({ path: dotEnvOptions.path });
+					resolve();
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	}
+
+	beforeAll(async () => {
+		jest.setTimeout(30000);
+	});
 
 	beforeEach(async () => {
-		const mockBankStatement = randomBSByQuantity(7);
-		const mockBankStatementRepository = {
-			getBankStatementUrlByProcessIdAndFolio: jest.fn().mockImplementation((pid: number, car_folio: string) =>
-				mockBankStatement.pipe(
-					map((bs) => bs.find((b) => b.prc_id === pid && b.car_folio === car_folio)),
-					last(),
-				),
-			),
-		};
+		await loadConfig();
+		// Register current_database function
 
+		console.log('====================================');
+		console.log(process.env.NODE_ENV, process.env.PORT);
+		console.log('====================================');
+		const winstonLogger = WinstonModule.createLogger(logger.console());
+		winstonLogger.log('info', 'test');
+		winstonLogger.log('env', process.env.NODE_ENV);
+		winstonLogger.log('port', process.env.PORT);
 		const moduleFixture: TestingModule = await Test.createTestingModule({
-			imports: [WinstonModule.forRoot(logger.console())],
+			imports: [AppModule, BankStatementModule],
 			controllers: [BankStatementController],
-			providers: [BankStatementController, BankStatementRepository],
-		})
-			.overrideProvider(BankStatementRepository)
-			.useValue(mockBankStatementRepository)
-			.compile();
+			providers: [BankStatementService],
+		}).compile();
 
 		app = moduleFixture.createNestApplication();
+
+		app.useLogger(winstonLogger);
 		await app.init();
 	});
 
-	it('/bank-statements/processID/car_folio?b64=true (GET)', () => {
-		return request(app.getHttpServer())
-			.get('/bank-statements/1/AEDS1?b64=true')
-			.expect(HttpStatus.OK)
-			.expect('Content-Type', /json/)
-			.expect(mockBankStatement);
+	// it('/bank-statements/processID/car_folio?b64=true (GET)', () => {
+	// 	return request(app.getHttpServer())
+	// 		.get('/bank-statements/1/AEDS1?b64=true')
+	// 		.expect(HttpStatus.OK)
+	// 		.expect('Content-Type', /json/)
+	// 		.expect(mockBankStatement);
+	// });
+
+	afterEach(async () => {
+		console.log('====================================');
+		console.log('afterEach');
+		console.log('====================================');
 	});
 
-	afterAll(async () => {
-		await app.close();
+	describe('should be defined', () => {
+		it('should be defined', () => {
+			expect(controller).toBeDefined();
+		});
 	});
+
+	// describe('BankStatement (e2e)', () => {
+	// 	const epUrl = `http://localhost:3000/cartolab/bank-statements`;
+
+	// 	it('should trigger a rut search - /pdf?b64=true', async () => {
+	// 		return request(epUrl)
+	// 			.get('/pdf?b64=true')
+	// 			.set('Content-Type', 'application/json')
+	// 			.set('Accept', 'application/json')
+	// 			.set('X-Folio', 'AEDS1')
+	// 			.set('X-Rut', '123456789')
+	// 			.set('X-Period', '202001')
+	// 			.send()
+	// 			.expect((response: request.Response) => {
+	// 				expect(response.body).toBeDefined();
+	// 			});
+	// 	});
+	// });
+
+	// describe('When find by one rut', () => {
+	// 	it('/cartolab/bank-statements/pdf?b64=true (GET)', () => {
+	// 		return request(app.getHttpServer())
+	// 			.get('/cartolab/bank-statements?b64=true')
+	// 			.expect(HttpStatus.OK)
+	// 			.expect('Content-Type', /json/)
+	// 			.expect(
+	// 				createBankStatement({
+	// 					rut: 189795696,
+	// 				}),
+	// 			);
+	// 	});
+	// });
 });
