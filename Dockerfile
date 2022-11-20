@@ -76,12 +76,12 @@ FROM build as test
 RUN yarn test
 
 # stage for sonar scanner
-FROM grafn/docker-sonarqube-scanner-with-node:${scannerVersion} as sonar
-ARG sonarProjKey
-ARG sonarOpts
-COPY --from=test /root/app /app
-WORKDIR /app
-RUN sonar-scanner --debug ${sonarOpts} -Dsonar.projectKey=${sonarProjKey} ${sonarOpts}
+# FROM grafn/docker-sonarqube-scanner-with-node:${scannerVersion} as sonar
+# ARG sonarProjKey
+# ARG sonarOpts
+# COPY --from=test /root/app /app
+# WORKDIR /app
+# RUN sonar-scanner --debug ${sonarOpts} -Dsonar.projectKey=${sonarProjKey} ${sonarOpts}
 
 FROM ca-roots as roots
 
