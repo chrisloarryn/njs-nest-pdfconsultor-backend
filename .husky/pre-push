@@ -1,0 +1,17 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo '🏗️👷 Testing your project before pushing👷‍♂️🏗️'
+echo 'please be patient, this may take a while...'
+
+# Check if there is any error in the code running the tests
+yarn test:run ||
+(
+    echo '🔨❌ Yoo, you have a problem in your code. Check tests 🔨❌
+          Run yarn test, add changes and try push again.';
+    false;
+)
+
+echo '🎉 No error found in tests, your push is good to go ✨🚀🏄‍♂️🍻'
+
+# start pushing to the remote repository

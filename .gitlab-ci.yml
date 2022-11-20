@@ -1,0 +1,61 @@
+# Este Template aplica para microservicios de tipo NodeJS que deplieguen el Kubernetes.
+# Requiere que en el repositorio existan los archivos: Dockerfile y deployment.yml
+# El archivo Dockerfile debe ser capaz de compilar el código
+# El archivo deployment.yml debe ser revisado previamente por el equipo CoE DevSecOps de CCLA
+
+# include:
+#   - project: 'ccla/devsecops/templates-ci-cd'
+#     ref: master
+#     file: '/Pipelines/CI/ventas-microservicio-nodejs.yml'
+
+image: node:19.0.0
+
+stages:
+  - build
+  - test
+  - deploy
+
+build:
+  stage: build
+  script:
+    - yarn
+  cache:
+    paths:
+      - node_modules/
+
+test:
+  stage: test
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+  dependencies:
+    - build
+  script:
+    - yarn vi:cov
+  cache:
+    paths:
+      - coverage/
+  artifacts:
+    paths:
+      - coverage/
+    when: always
+    reports:
+      junit:
+        - junit.xml
+      codequality:
+        - cobertura-coverage.xml
+deploy:
+  stage: deploy
+  script:
+    - mkdir .public
+    - cp -r coverage/* .public
+    - mv .public public
+  dependencies:
+    - test
+  artifacts:
+    paths:
+     - public
+  only:
+    - master
+    - qa
+    - dev
+  except:
+    - tags

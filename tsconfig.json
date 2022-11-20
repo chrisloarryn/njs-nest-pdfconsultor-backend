@@ -1,0 +1,36 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"declaration": true,
+		"removeComments": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"target": "es2017",
+		"sourceMap": false,
+		"outDir": "./dist",
+		"baseUrl": "./",
+		"incremental": true,
+		"strict": true,
+		"strictPropertyInitialization": false,
+		// no check node_modules
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"types": [
+			"vitest/globals"
+		],
+		"typeRoots": [
+			"node_modules/@types",
+			"src/api/types",
+			"vitest/globals"
+		],
+		"paths": {
+			"@ccla/*": [
+				"src/*"
+			],
+			"@cclatest/*": [
+				"test/*"
+			]
+		}
+	}
+}
