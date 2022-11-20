@@ -17,7 +17,7 @@ export type BankStatementOptions = {
 
 @Injectable()
 export class BankStatementService {
-	private readonly repo: BankStatementRepository;
+	constructor(private readonly repo: BankStatementRepository) {}
 	getBankStatementsByPeriodRutAndFolio(bsOptions?: BankStatementOptions): Observable<AcquireWithBase64[] | AcquireBankStatementUrl[]> {
 		if (!bsOptions) {
 			throw new BadRequestException('Bank statement options are required');
