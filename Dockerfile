@@ -51,8 +51,6 @@ ARG buildDir=target
 ARG PROD_NODE_MODULES_PATH
 WORKDIR /opt/app
 
-
-
 # copy transpiled source
 COPY --chown=1000:10001 --from=build /root/app/${buildDir} ./
 
