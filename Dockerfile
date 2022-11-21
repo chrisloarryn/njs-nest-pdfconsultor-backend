@@ -55,11 +55,6 @@ ARG PROD_NODE_MODULES_PATH
 WORKDIR /opt/app
 
 
-# Non root user config
-RUN addgroup -S -g 1001 appGrp \
-	&& adduser -S -D -u 1000 /bin/nologin -h /opt/app -G appGrp app
-
-USER 1000
 
 # copy transpiled source
 COPY --chown=1000:10001 --from=build /root/app/${buildDir} ./
