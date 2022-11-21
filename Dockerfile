@@ -11,7 +11,11 @@ RUN yarn install
 
 COPY . . 
 
-RUN npm install --global rimraf && npm install --global parcel-bundler
+RUN yarn global add  rimraf \
+	&& yarn global add  parcel-bundler \
+	&& yarn global add  typescript \
+	&& yarn global add  ts-node \
+	&& yarn global add -@nestjs/cli
 
 RUN yarn build
 
