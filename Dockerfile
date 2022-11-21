@@ -25,7 +25,7 @@ COPY package*.json yarn.lock* ./
 # COPY package.json  ./
 # download prod dependencies and cache them
 
-RUN yarn install --only=production --loglevel verbose
+RUN yarn install --only=production
 RUN cp -R node_modules "${PROD_NODE_MODULES_PATH}"
 
 # download dev dependencies
