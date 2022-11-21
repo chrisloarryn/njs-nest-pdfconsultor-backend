@@ -30,7 +30,6 @@
 	},
 	"dependencies": {
 		"@google-cloud/logging-winston": "^5.2.0",
-		"@hapi/joi": "^17.1.1",
 		"@nestjs-addons/in-memory-db": "^3.0.3",
 		"@nestjs/axios": "^1.0.0",
 		"@nestjs/common": "^9.1.6",
@@ -87,9 +86,7 @@
 		"moment": "^2.29.4",
 		"node-irr": "^2.0.3",
 		"node-notifier": "^10.0.1",
-		"pg-mem": "^2.6.4",
 		"prettier": "^2.7.1",
-		"ramda": "^0.28.0",
 		"sonarqube-scanner": "^2.8.2",
 		"supertest": "^6.3.1",
 		"ts-jest": "^29.0.3",
