@@ -21,7 +21,7 @@ ENTRYPOINT [ "/sbin/tini", "--" ]
 FROM base as dependencies
 ARG PROD_NODE_MODULES_PATH
 ## copy package.json and yarn.lock if exists
-COPY package.json yarn.lock? ./
+COPY package*.json yarn.lock* ./
 # COPY package.json  ./
 # download prod dependencies and cache them
 RUN yarn set progress false \
