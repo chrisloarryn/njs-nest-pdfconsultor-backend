@@ -24,15 +24,11 @@ ARG PROD_NODE_MODULES_PATH
 COPY package*.json yarn.lock* ./
 # COPY package.json  ./
 # download prod dependencies and cache them
-RUN yarn set progress false \
-	&& yarn config set depth 0 \
-	&& yarn config set strict-ssl false
-
-RUN yarn install --frozen-lockfile --only=production --loglevel verbose
+RUN yarn install --only=production --loglevel verbose
 RUN cp -R node_modules "${PROD_NODE_MODULES_PATH}"
 
 # download dev dependencies
-RUN yarn install
+RUN yarn install --frozen-lockfile
 
 FROM dependencies as build
 # splitting copy of source to ensure caching npm_modules
