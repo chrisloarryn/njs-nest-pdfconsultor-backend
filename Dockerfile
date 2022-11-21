@@ -6,15 +6,12 @@ RUN mkdir /sinco-app-service
 
 WORKDIR /sinco-app-service
 
-COPY package.json ./
-COPY private.key ./
-COPY public.key ./
 
-RUN npm install --legacy-peer-deps
+RUN yarn install
 
 COPY . . 
 
-RUN npm run build
+RUN yarn build
 
 # Base image for production
 FROM node:16.14.0-alpine As production
@@ -28,7 +25,7 @@ RUN mkdir /sinco-app-service
 WORKDIR /sinco-app-service
 
 
-RUN npm install --production
+RUN npm yarn --production
 
 # Bundle app source
 # COPY . .
