@@ -25,7 +25,7 @@ RUN mkdir /sinco-app-service
 WORKDIR /sinco-app-service
 
 
-RUN npm yarn --production
+RUN yarn install --production
 
 # Bundle app source
 # COPY . .
