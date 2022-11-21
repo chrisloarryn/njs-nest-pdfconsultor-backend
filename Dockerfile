@@ -1,22 +1,3 @@
-# FROM node:16-alpine
-
-# WORKDIR /app
-
-# COPY dist/ /app/dist
-# COPY package.json .
-# COPY node_modules/ /app/node_modules 
-
-# RUN chown -R daemon /app/dist/
-
-# USER daemon
-
-# RUN mkdir -p /app/dist/logs
-
-# WORKDIR /app/dist
-
-# CMD ["yarn", "start:prod"]
-# EXPOSE 8081/TCP
-
 ARG nodeVersion=18.0.0
 ARG buildDir=target
 ARG PROD_NODE_MODULES_PATH=/tmp/prod_node_modules
@@ -26,20 +7,6 @@ ARG STAGE_NAME=dev
  ##0.0.23
 ARG sonarProjKey=njs-nest-pdfconsultor-backend
 ## options in multiline
-ARG sonarOpts='-Dsonar.sources=. \
-				-Dsonar.projectVersion=1.0.0 \
-				-Dsonar.tests=. \
-				-Dsonar.language=ts \
-				-Dsonar.sourceEncoding=UTF-8 \
-				-Dsonar.exclusions=**/node_modules/**/*,**/dist/**/*,**/coverage/**/*,**/test/**/*,**/src/main.ts,**/src/app.module.ts,**/src/app.controller.ts,**/src/app.service.ts,**/src/main.ts,**/src/app.module.ts,**/src/app.controller.ts,**/src/app.service.ts \
-				-Dsonar.test.inclusions=**/*.spec.ts \
-				-Dsonar.test.exclusions=**/node_modules/**/*,**/dist/**/*,**/coverage/**/*,**/test/**/*,**/src/main.ts,**/src/app.module.ts,**/src/app.controller.ts,**/src/app.service.ts,**/src/main.ts,**/src/app.module.ts,**/src/app.controller.ts,**/src/app.service.ts \
-				-Dsonar.typescript.lcov.reportPaths=./coverage/lcov.info \
-				-Dsonar.typescript.tests.reportPaths=./coverage/json-test-reporter.json \
-				-Dsonar.genericcoverage.testExecutionReportPaths=./coverage/test-results.xml \
-	-Dsonar.projectKey=njs-nest-pdfconsultor-backend \
-				-Dsonar.host.url=http://localhost:9000 \
-				-Dsonar.login=sqp_3cfc803b8f135cf21e8cf92d9d834ed45bb46f38'
 
 FROM node:${nodeVersion}-alpine${alpineVersion} as base
 
@@ -75,15 +42,6 @@ RUN yarn build
 FROM build as test
 RUN yarn test
 
-# stage for sonar scanner
-# FROM grafn/docker-sonarqube-scanner-with-node:${scannerVersion} as sonar
-# ARG sonarProjKey
-# ARG sonarOpts
-# COPY --from=test /root/app /app
-# WORKDIR /app
-# RUN sonar-scanner --debug ${sonarOpts} -Dsonar.projectKey=${sonarProjKey} ${sonarOpts}
-
-FROM ca-roots as roots
 
 FROM base AS release
 LABEL maintainer="Nest.js PDFConsultor Backend" \
@@ -94,15 +52,6 @@ ARG buildDir=target
 ARG PROD_NODE_MODULES_PATH
 WORKDIR /opt/app
 
-# copy kwnow ca certs from ca-roots
-COPY --from=base /etc/apk/repositories /etc/apk/repositories
-COPY --from=roots /usr/local/share/ca-certificates /usr/local/share/ca-certificates
-COPY --from=roots /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-RUN rm -f /etc/ssl/cert.pem && ln -s /etc/ssl/certs/ca-certificates.crt /etc/ssl/cert.pem \
-	&& apk update && apk upgrade && apk add --no-cache ca-certificates && update-ca-certificates
-
-# set node override adding custom certs
-ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/cert.pem
 
 # Non root user config
 RUN addgroup -S -g 1001 appGrp \
