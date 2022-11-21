@@ -1,18 +1,42 @@
-FROM node:18-alpine
+FROM node:16.14.0-alpine As development
 
-WORKDIR /app
+LABEL maintainer="sinco-app-service"
 
-COPY dist/ /app/dist
-COPY package.json .
-COPY node_modules/ /app/node_modules 
+RUN mkdir /sinco-app-service
 
-RUN chown -R daemon /app/dist/
+WORKDIR /sinco-app-service
 
-USER daemon
+COPY package.json ./
+COPY private.key ./
+COPY public.key ./
 
-RUN mkdir -p /app/dist/logs
+RUN npm install --legacy-peer-deps
 
-WORKDIR /app/dist
+COPY . . 
 
-CMD ["yarn", "start:prod"]
-EXPOSE 8081/TCP
+RUN npm run build
+
+# Base image for production
+FROM node:16.14.0-alpine As production
+
+# Set NODE_ENV environment variable
+ENV NODE_ENV production
+
+# Create app directory
+RUN mkdir /sinco-app-service
+
+WORKDIR /sinco-app-service
+
+
+RUN npm install --production
+
+# Bundle app source
+# COPY . .
+
+# Copy the bundled code
+COPY --from=development /sinco-app-service/dist ./dist
+
+EXPOSE 4000
+
+# Start the server using the production build
+CMD [ "node", "dist/src/main.js" ]
