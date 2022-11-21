@@ -11,6 +11,8 @@ RUN yarn install
 
 COPY . . 
 
+RUN npm install --global rimraf && npm install --global parcel-bundler
+
 RUN yarn build
 
 # Base image for production
