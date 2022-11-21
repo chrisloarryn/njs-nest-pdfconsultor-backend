@@ -17,10 +17,10 @@
 # CMD ["yarn", "start:prod"]
 # EXPOSE 8081/TCP
 
-ARG nodeVersion=19.0.0
+ARG nodeVersion=18.0.0
 ARG buildDir=target
 ARG PROD_NODE_MODULES_PATH=/tmp/prod_node_modules
-ARG alpineVersion=3.14
+ARG alpineVersion=3.15
 ARG scannerVersion=latest
 ARG STAGE_NAME=dev
  ##0.0.23
