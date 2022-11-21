@@ -1,19 +1,27 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "rootDir": "./",
-    "declaration": false,
-    "removeComments": true,
-    "sourceMap": false,
-    "incremental": false
-  },
-  "exclude": [
-    "node_modules",
-    "coverage",
-    "test",
-    "build",
-    "dist",
-    "**/*spec.ts",
-    "**/*mocks.ts"
-  ]
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"rootDir": "./",
+		"declaration": false,
+		"removeComments": true,
+		"sourceMap": false,
+		"incremental": false
+	},
+	"exclude": [
+		"node_modules",
+		"coverage",
+		"test",
+		"build",
+		"dist",
+		"**/*spec.ts",
+		"**/*mocks.ts",
+		"**/sonarqube-scanner.*"
+		// omit vitest.config.ts
+		// "**/vitest.config.ts",
+		// "**/setupFile.ts",
+		// // commitlint.config.js
+		// "**/commitlint.config.js",
+		// // webpack.config.js
+		// "**/webpack-hmr.config.js",
+	]
 }

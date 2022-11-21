@@ -1,5 +1,25 @@
 version: "3"
 services:
+  service:
+    restart: always
+    container_name: service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:4000"
+    volumes:
+      - ./data/app:/app
+      - ./data/root:/root
+      - ./node_modules:/app/node_modules
+      # /tmp
+      - ./data/tmp:/tmp
+      - ./data/:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - "NODE_ENV=development"
+      - "PORT=3000"
+      - "PROD_NODE_MODULES_PATH=/tmp/prod_node_modules"
   sonarqube:
     image: sonarqube:community
     hostname: sonarqube

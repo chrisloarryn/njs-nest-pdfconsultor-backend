@@ -1,45 +1,36 @@
-FROM node:16.14.0-alpine As development
 
-LABEL maintainer="sinco-app-service"
+# lts-gallium refers to v16
+# Using this instead of node:16 to avoid dependabot updates
+FROM node:lts-gallium as builder
 
-RUN mkdir /sinco-app-service
+WORKDIR /usr/src/app
 
-WORKDIR /sinco-app-service
+## copy package.json and yarn.lock
+COPY package*.json yarn.lock* ./
+RUN yarn install --frozen-lockfile
 
+COPY . .
 
-RUN yarn install
+ARG APP_ENV=development
+ENV NODE_ENV=${APP_ENV}
 
-COPY . . 
+# if tests fail throw error, else build
+RUN yarn test && yarn build
 
-RUN yarn global add  rimraf \
-	&& yarn global add  parcel-bundler \
-	&& yarn global add  typescript \
-	&& yarn global add  ts-node \
-	&& yarn global add -@nestjs/cli
+# production environment
+RUN yarn prune
 
-RUN yarn build
+FROM node:lts-gallium
 
-# Base image for production
-FROM node:16.14.0-alpine As production
+ARG APP_ENV=development
+ENV NODE_ENV=${APP_ENV}
 
-# Set NODE_ENV environment variable
-ENV NODE_ENV production
+WORKDIR /usr/src/app
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/package*.json usr/src/ ./
+COPY --from=builder /usr/src/app/dist ./dist
 
-# Create app directory
-RUN mkdir /sinco-app-service
+EXPOSE 3000
 
-WORKDIR /sinco-app-service
-
-
-RUN yarn install --production
-
-# Bundle app source
-# COPY . .
-
-# Copy the bundled code
-COPY --from=development /sinco-app-service/dist ./dist
-
-EXPOSE 4000
-
-# Start the server using the production build
-CMD [ "node", "dist/src/main.js" ]
+USER node
+CMD [ "yarn",  "start:prod" ]
