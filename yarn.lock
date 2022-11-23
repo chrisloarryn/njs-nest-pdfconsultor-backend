@@ -1602,10 +1602,10 @@
   resolved "https://registry.yarnpkg.com/@validatecl/rut/-/rut-4.0.3.tgz#19ba56a606b14ad570435f8b27994efd6bcdb7c8"
   integrity sha512-3RmnQBgfn67Psy9GpuugxiENd5e0LwegaG8dhIRYcxXsxYATz67FLmrbHl5NHXMke7JhaCMzWy7mxEivOCHpOg==
 
-"@vitest/coverage-istanbul@^0.25.2":
-  version "0.25.2"
-  resolved "https://registry.yarnpkg.com/@vitest/coverage-istanbul/-/coverage-istanbul-0.25.2.tgz#a55895faa1355addc2aeafc21fb4a6a822b22d25"
-  integrity sha512-7UxxHlfqBPOMDEg38y9ctCFelN1g16aOQRqz4DSixO2MQ/SAENVksBOPX/peyp2zInMs09hCNNJkGW6dd50w9Q==
+"@vitest/coverage-istanbul@^0.25.3":
+  version "0.25.3"
+  resolved "https://registry.yarnpkg.com/@vitest/coverage-istanbul/-/coverage-istanbul-0.25.3.tgz#3228fa67ed6016725333ea30dacb48dc32764a50"
+  integrity sha512-wNV+fgNTsD8hAD106fMYyGKgazlqgKmkjXOMEYGWM0qnfvBwD0NRcIDzD7M7+oFhYKlGdAGzxRglr6fp9yOgBQ==
   dependencies:
     istanbul-lib-coverage "^3.2.0"
     istanbul-lib-instrument "^5.2.1"
@@ -1613,7 +1613,7 @@
     istanbul-lib-source-maps "^4.0.1"
     istanbul-reports "^3.1.5"
     test-exclude "^6.0.0"
-    vitest "0.25.2"
+    vitest "0.25.3"
 
 "@webassemblyjs/ast@1.11.1":
   version "1.11.1"
@@ -7842,10 +7842,10 @@ vitest-sonar-reporter@^0.3.3:
   dependencies:
     pathe "^0.3.9"
 
-vitest@0.25.2, vitest@^0.25.2:
-  version "0.25.2"
-  resolved "https://registry.yarnpkg.com/vitest/-/vitest-0.25.2.tgz#b8afd2ad4ea3c759f383792b5c3a2998ceb15fcc"
-  integrity sha512-qqkzfzglEFbQY7IGkgSJkdOhoqHjwAao/OrphnHboeYHC5JzsVFoLCaB2lnAy8krhj7sbrFTVRApzpkTOeuDWQ==
+vitest@0.25.3, vitest@^0.25.2:
+  version "0.25.3"
+  resolved "https://registry.yarnpkg.com/vitest/-/vitest-0.25.3.tgz#4e5ed481e4da6a0ce014bdb71dfc9661fd62b722"
+  integrity sha512-/UzHfXIKsELZhL7OaM2xFlRF8HRZgAHtPctacvNK8H4vOcbJJAMEgbWNGSAK7Y9b1NBe5SeM7VTuz2RsTHFJJA==
   dependencies:
     "@types/chai" "^4.3.3"
     "@types/chai-subset" "^1.3.3"
