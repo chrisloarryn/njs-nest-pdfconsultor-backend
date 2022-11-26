@@ -4,7 +4,7 @@ import { AcquireBankStatementUrl, AcquireWithBase64, BankStatement } from '../..
 import { FakeCreateBankStatementOptions } from './../types/create.type';
 import { createBankStatement, createRepoBS } from './createBankStatement.helper';
 
-describe('pgConfig', () => {
+describe('create Stubs', () => {
 	let options: FakeCreateBankStatementOptions = {};
 	beforeEach(() => {
 		options = {};
@@ -117,7 +117,7 @@ describe('pgConfig', () => {
 			expect(data).toBeInstanceOf(Object);
 			expect(data).toBeInstanceOf(AcquireBankStatementUrl);
 
-			expect(data.created_at).toBe(now);
+			expect(data.created_at.getTime()).toBe(now.getTime());
 		});
 	});
 });

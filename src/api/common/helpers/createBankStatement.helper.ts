@@ -26,7 +26,7 @@ export function createBankStatement(options?: FakeCreateBankStatementOptions): B
 	bankStatement.setBankStatementFolio(isEmpty(folio) ? faker.random.alphaNumeric(folioLength) : folio);
 	bankStatement.setBankStatementProcessID(!isNumber(processID) ? Number(faker.random.numeric(processIDLength)) : processID);
 	// TODO: rut should be string
-	bankStatement.setBankStatementRut(isNumber(rut) ? rut : Number(faker.random.numeric(rutLength)));
+	bankStatement.setBankStatementRut(isNumber(rut) ? Number(rut) : Number(faker.random.numeric(rutLength)));
 	bankStatement.setBankStatementUrl(isEmpty(url) ? faker.internet.url() : url);
 	bankStatement.setBankStatementProductID(isEmpty(productID) ? faker.random.alphaNumeric(productIDLength) : productID);
 	bankStatement.setBankStatementPeriod(isEmpty(period) ? faker.random.alphaNumeric(periodLength) : period);
@@ -78,11 +78,11 @@ export function createRepoBS(options?: FakeCreateBSRepoOptions): AcquireBankStat
 	bankStatement.car_folio = isEmpty(folio) ? faker.random.alphaNumeric(folioLength) : folio;
 	bankStatement.car_periodo = isEmpty(period) ? faker.random.alphaNumeric(periodLength) : period;
 	// TODO: rut should be string
-	bankStatement.car_rut = isNumber(rut) ? rut : Number(faker.random.numeric(rutLength));
+	bankStatement.car_rut = isNumber(rut) ? Number(rut) : Number(faker.random.numeric(rutLength));
 	bankStatement.car_url = isEmpty(url) ? faker.internet.url() : url;
 
 	if (isDate(date)) {
-		bankStatement.created_at = date;
+		bankStatement.created_at = new Date(date);
 	} else if (dateOccurrence === 'future') {
 		bankStatement.created_at = faker.date.future();
 	} else {
