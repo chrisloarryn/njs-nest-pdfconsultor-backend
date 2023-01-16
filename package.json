@@ -68,7 +68,7 @@
 		"@types/jest": "^29.2.3",
 		"@types/node": "^18.11.9",
 		"@types/supertest": "^2.0.12",
-		"@typescript-eslint/eslint-plugin": "^5.42.0",
+		"@typescript-eslint/eslint-plugin": "^5.48.2",
 		"@typescript-eslint/parser": "^5.42.0",
 		"@vitest/coverage-istanbul": "^0.25.2",
 		"cz-conventional-changelog": "3.3.0",
