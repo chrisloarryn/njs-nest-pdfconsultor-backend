@@ -82,7 +82,7 @@
 		"lint-staged": "^14.0.1",
 		"lodash": "^4.17.21",
 		"moment": "^2.29.4",
-		"node-irr": "^2.0.3",
+		"node-irr": "^2.0.5",
 		"node-notifier": "^10.0.1",
 		"prettier": "^3.0.3",
 		"sonarqube-scanner": "^2.8.2",
