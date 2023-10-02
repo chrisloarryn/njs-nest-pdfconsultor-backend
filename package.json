@@ -31,7 +31,7 @@
 	"dependencies": {
 		"@google-cloud/logging-winston": "^5.2.0",
 		"@nestjs-addons/in-memory-db": "^3.0.3",
-		"@nestjs/axios": "^1.0.0",
+		"@nestjs/axios": "^1.0.1",
 		"@nestjs/common": "^9.1.6",
 		"@nestjs/config": "^2.2.0",
 		"@nestjs/core": "^9.1.6",
