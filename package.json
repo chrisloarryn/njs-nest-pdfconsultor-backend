@@ -95,7 +95,7 @@
 		"vite-tsconfig-paths": "^3.6.0",
 		"vitest": "^0.34.6",
 		"vitest-sonar-reporter": "^0.4.1",
-		"xml2js": "^0.5.0"
+		"xml2js": "^0.6.2"
 	},
 	"lint-staged": {
 		"**.{js,jsx,ts,tsx}": [
