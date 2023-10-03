@@ -1806,10 +1806,10 @@
     "@typescript-eslint/types" "5.54.0"
     eslint-visitor-keys "^3.3.0"
 
-"@validatecl/rut@^4.0.3":
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/@validatecl/rut/-/rut-4.0.3.tgz#19ba56a606b14ad570435f8b27994efd6bcdb7c8"
-  integrity sha512-3RmnQBgfn67Psy9GpuugxiENd5e0LwegaG8dhIRYcxXsxYATz67FLmrbHl5NHXMke7JhaCMzWy7mxEivOCHpOg==
+"@validatecl/rut@^4.0.7":
+  version "4.0.7"
+  resolved "https://registry.yarnpkg.com/@validatecl/rut/-/rut-4.0.7.tgz#bef539ecd0cefa979f67d3a054fe9b78bdb27fa6"
+  integrity sha512-9E6fSXNcLon8ebZjdi0fmO1cqgxxGdqE9uRgfnaqj+QtYTJcr18ecUA2CDwMw5rDt+edUSVE43DcUkv7pS2xmQ==
 
 "@vitest/coverage-istanbul@^0.28.5":
   version "0.28.5"
