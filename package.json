@@ -39,7 +39,7 @@
 		"@nestjs/platform-express": "^9.4.3",
 		"@nestjs/swagger": "^7.1.12",
 		"@nestjs/terminus": "^9.2.1",
-		"@nestjs/typeorm": "^9.0.1",
+		"@nestjs/typeorm": "^10.0.0",
 		"@supercharge/request-ip": "^1.2.0",
 		"@validatecl/rut": "^4.0.3",
 		"axios": "^1.1.3",
