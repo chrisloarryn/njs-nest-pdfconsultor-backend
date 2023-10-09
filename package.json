@@ -45,7 +45,7 @@
 		"axios": "^1.5.1",
 		"class-transformer": "^0.5.1",
 		"class-validator": "^0.14.0",
-		"joi": "^17.7.0",
+		"joi": "^17.11.0",
 		"nest-winston": "^1.9.4",
 		"pdf-to-base64": "^1.0.3",
 		"pg": "^8.8.0",
