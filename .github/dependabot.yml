@@ -5,8 +5,40 @@
 
 version: 2
 updates:
-- package-ecosystem: npm
-  directory: "/"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      # Prefix all commit messages with "[github-actions] " (no colon, but a trailing whitespace)
+      prefix: "[github-actions] "
+    labels:
+      - "github-actions"
+      - "dependencies"
+    assignees:
+      - "chrisloarryn"
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      # Prefix all commit messages with "npm: "
+      prefix: "[npm] "
+    labels:
+      - "npm"
+      - "dependencies"
+    assignees:
+      - "chrisloarryn"
+    
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      # Prefix all commit messages with "[docker] " (no colon, but a trailing whitespace)
+      prefix: "[docker] "
+    labels:
+      - "docker"
+      - "dependencies"
+    assignees:
+      - "chrisloarryn"
