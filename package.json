@@ -57,7 +57,7 @@
 		"winston": "^3.11.0"
 	},
 	"devDependencies": {
-		"@commitlint/cli": "^17.7.2",
+		"@commitlint/cli": "^17.8.0",
 		"@commitlint/config-conventional": "^17.4.4",
 		"@faker-js/faker": "^8.2.0",
 		"@nestjs/cli": "^9.1.5",
