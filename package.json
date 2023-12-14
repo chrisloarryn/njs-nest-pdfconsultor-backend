@@ -37,7 +37,7 @@
 		"@nestjs/core": "^9.1.6",
 		"@nestjs/mapped-types": "^2.0.2",
 		"@nestjs/platform-express": "^9.4.3",
-		"@nestjs/swagger": "^7.1.14",
+		"@nestjs/swagger": "^7.1.17",
 		"@nestjs/terminus": "^10.1.1",
 		"@nestjs/typeorm": "^10.0.0",
 		"@supercharge/request-ip": "^1.2.0",
