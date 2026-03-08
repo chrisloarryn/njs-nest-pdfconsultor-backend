@@ -49,4 +49,25 @@ describe('TypeormBankStatementRepository', () => {
 			}),
 		);
 	});
+
+	it.each([
+		['findByFolio', () => repository.findByFolio('A1'), { car_folio: 'A1' }],
+		['findByFolioAndRut', () => repository.findByFolioAndRut('A1', 12345678), { car_folio: 'A1', car_rut: 12345678 }],
+		['findByPeriodAndRut', () => repository.findByPeriodAndRut('202401', 12345678), { car_periodo: '202401', car_rut: 12345678 }],
+		[
+			'findByPeriodRutAndFolio',
+			() => repository.findByPeriodRutAndFolio('202401', 12345678, 'A1'),
+			{ car_folio: 'A1', car_periodo: '202401', car_rut: 12345678 },
+		],
+	])('builds the expected where clause for %s', async (_, runQuery, where) => {
+		ormRepository.find.mockReturnValue(Promise.resolve([]));
+
+		await lastValueFrom(runQuery());
+
+		expect(ormRepository.find).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where,
+			}),
+		);
+	});
 });
