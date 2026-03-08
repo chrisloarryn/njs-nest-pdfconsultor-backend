@@ -1,30 +1,8 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
 
-echo '🏗️👷 Styling your project before committing👷‍♂️🏗️'
-echo 'please be patient, this may take a while...'
+set -eu
 
-# Check ESLint Standards
-yarn lint ||
-(
-    echo '🔨❌ Yoo, you have a problem in your code. Check linter 🔨❌
-          Run yarn lint, add changes and try commit again.';
-    false;
-)
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$script_dir/load-node.sh"
 
-echo '🎉 No error found in style, you can commit 🎉'
-
-# Check if there is any error in the code running the tests
-echo '🏗️👷 Running tests before committing👷‍♂️🏗️'
-echo 'please be patient, this may take a while...'
-yarn test:run ||
-(
-    echo '🔨❌ Yoo, you have a problem in your code. Check tests 🔨❌
-          Run yarn test, add changes and try commit again.';
-    false;
-)
-
-echo '🎉 No error found in tests, your commit is good to go ✨🚀🏄‍♂️🍻'
-
-
-npx lint-staged
+npx --no-install lint-staged

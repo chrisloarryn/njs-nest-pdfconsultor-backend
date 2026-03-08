@@ -1,57 +1,41 @@
-import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
-import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import * as dotenv from 'dotenv';
+import { TypeOrmModule, type TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { WinstonModule } from 'nest-winston';
 
-import { dotEnvOptions } from './api/common/utils/dotenv-options';
-import { HealthController } from './api/common/utils/health.controller';
-import { BankStatementModule } from './api/modules/bank-statement/bank-statement.module';
-import { BankStatement } from './api/modules/bank-statement/entities/bank-statement.entity';
-import { Process } from './api/modules/process/entities/process.entity';
-import { Product } from './api/modules/product/entities/product.entity';
-import { HttpConfig } from './config/http.config';
-import { LoggerConfig } from './config/loggerConfig';
-import pgConfig from './config/pg.config';
-import { PostgresConfig } from './config/postgres.config';
-
-dotenv.config({ path: dotEnvOptions.path });
-
-const logger: LoggerConfig = new LoggerConfig();
-const http: HttpConfig = new HttpConfig();
+import { BankStatementsModule } from '@/modules/bank-statements/bank-statements.module';
+import { HealthModule } from '@/modules/health/health.module';
+import appConfig from '@/shared/infrastructure/config/app.config';
+import databaseConfig, { type DatabaseConfig } from '@/shared/infrastructure/config/database.config';
+import { validateEnv } from '@/shared/infrastructure/config/env.validation';
+import { resolveEnvFilePath } from '@/shared/infrastructure/config/env-file-path';
+import { createTypeOrmDataSource, createTypeOrmModuleOptions } from '@/shared/infrastructure/config/typeorm.config';
+import { createWinstonOptions } from '@/shared/infrastructure/logging/logger.config';
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({
-			envFilePath: [dotEnvOptions.path, '.env'],
-			load: [pgConfig],
 			isGlobal: true,
+			envFilePath: [resolveEnvFilePath()],
+			load: [appConfig, databaseConfig],
+			validate: validateEnv,
 		}),
-		WinstonModule.forRoot(logger.console()),
+		WinstonModule.forRootAsync({
+			inject: [ConfigService],
+			useFactory: (configService: ConfigService) => createWinstonOptions(configService.get<string>('app.serviceName')),
+		}),
 		TypeOrmModule.forRootAsync({
 			inject: [ConfigService],
-			imports: [ConfigModule],
-			useFactory: (config: ConfigService) => {
-				const pgConfig = config.get<TypeOrmModuleOptions>('pg') as TypeOrmModuleOptions;
-
-				const postgresConfig: PostgresConfig = new PostgresConfig(pgConfig);
-				const isValid = postgresConfig.validate();
-				if (!isValid) {
-					throw new Error('Invalid typeorm config');
-				}
-
-				const typeOrmOptions = postgresConfig.createTypeOrmOptions();
-
-				return typeOrmOptions;
+			useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
+				const config = configService.getOrThrow<DatabaseConfig>('database');
+				return createTypeOrmModuleOptions(config);
 			},
+			dataSourceFactory: async (options) => createTypeOrmDataSource(options as TypeOrmModuleOptions),
 		}),
-		TypeOrmModule.forFeature([BankStatement, Process, Product]),
-		HttpModule.register(http.getOptions()),
 		TerminusModule,
-		BankStatementModule,
+		BankStatementsModule,
+		HealthModule,
 	],
-	controllers: [HealthController],
 })
 export class AppModule {}

@@ -1,55 +1,55 @@
-import('reflect-metadata');
+import 'reflect-metadata';
+
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import type { Logger } from 'winston';
 
-import { HttpExceptionFilter } from '@ccla/api/core/http-exceptions/http-exceptions.filter';
-
-import { AppModule } from './app.module';
-import { LoggerConfig } from './config';
-
-declare const module: any;
+import { AppModule } from '@/app.module';
+import { HttpExceptionFilter } from '@/shared/presentation/filters/http-exception.filter';
 
 async function bootstrap() {
-	const logger: LoggerConfig = new LoggerConfig();
-
-	const winstonLogger = WinstonModule.createLogger(logger.console());
-
 	const app = await NestFactory.create(AppModule, {
-		logger: winstonLogger,
+		bufferLogs: true,
 	});
 
-	//modificar nombre dependiendo el servicio !<servicioejemplo-backend>
-	winstonLogger.log('Preparing msusecases-backend application');
+	const configService = app.get(ConfigService);
+	const logger = app.get<Logger>(WINSTON_MODULE_NEST_PROVIDER);
+	const globalPrefix = configService.get<string>('app.globalPrefix', 'cartolab');
+	const swaggerUrl = configService.get<string>('app.swagger.url', 'api-docs');
+	const nodeEnv = configService.get<string>('app.nodeEnv', 'development');
+	const port = configService.get<number>('app.port', 3000);
 
-	app.useGlobalFilters(new HttpExceptionFilter());
-	app.useGlobalPipes(new ValidationPipe());
-	app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
-	app.setGlobalPrefix(process.env.GLOBAL_PREFIX || 'msusecases/v1');
+	app.useLogger(logger);
+	app.useGlobalFilters(new HttpExceptionFilter(logger));
+	app.useGlobalPipes(
+		new ValidationPipe({
+			transform: true,
+			whitelist: true,
+			forbidUnknownValues: false,
+		}),
+	);
+	app.setGlobalPrefix(globalPrefix);
 
-	const configSwagger = new DocumentBuilder()
-		.setTitle(process.env.SWAGGER_NAME || process.env['SWAGGER_NAME'])
-		.setDescription(process.env.SWAGGER_DESCRIPTION || process.env['SWAGGER_DESCRIPTION'])
-		.setVersion(process.env.SWAGGER_VERSION || process.env['SWAGGER_VERSION'])
-		.setContact(
-			process.env.SWAGGER_CONTACT_NAME || process.env['SWAGGER_CONTACT_NAME'],
-			'',
-			process.env.SWAGGER_CONTACT_EMAIL || process.env['SWAGGER_CONTACT_EMAIL'],
-		)
-		.build();
+	if (nodeEnv !== 'production') {
+		const swaggerConfig = new DocumentBuilder()
+			.setTitle(configService.get<string>('app.swagger.name', 'PDF Consultor API'))
+			.setDescription(configService.get<string>('app.swagger.description', 'API para consulta de cartolas PDF'))
+			.setVersion(configService.get<string>('app.swagger.version', '1.0.0'))
+			.setContact(
+				configService.get<string>('app.swagger.contactName', 'Arquitectura'),
+				'',
+				configService.get<string>('app.swagger.contactEmail', 'arquitectura@example.com'),
+			)
+			.build();
 
-	if (process.env.NODE_ENV || process.env['NODE_ENV'] !== 'production') {
-		const document = SwaggerModule.createDocument(app, configSwagger);
-		SwaggerModule.setup(process.env.GLOBAL_PREFIX + '/' + process.env.SWAGGER_URL, app, document);
+		const document = SwaggerModule.createDocument(app, swaggerConfig);
+		SwaggerModule.setup(`${globalPrefix}/${swaggerUrl}`, app, document);
 	}
 
-	await app.listen(process.env.PORT);
-
-	if (module.hot) {
-		module.hot.accept();
-		module.hot.dispose(() => app.close());
-	}
+	await app.listen(port);
 }
 
-bootstrap();
+void bootstrap();
