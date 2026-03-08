@@ -1,4 +1,8 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
 
-npx lint-staged
+set -eu
+
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$script_dir/load-node.sh"
+
+npx --no-install lint-staged

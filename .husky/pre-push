@@ -1,15 +1,18 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+
+set -eu
+
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$script_dir/load-node.sh"
 
 echo '🏗️👷 Testing your project before pushing👷‍♂️🏗️'
 echo 'please be patient, this may take a while...'
 
 # Check if there is any error in the code running the tests
-yarn test:run ||
-(
+npm run test:run || (
     echo '🔨❌ Yoo, you have a problem in your code. Check tests 🔨❌
           Run yarn test, add changes and try push again.';
-    false;
+    false
 )
 
 echo '🎉 No error found in tests, your push is good to go ✨🚀🏄‍♂️🍻'
