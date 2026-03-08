@@ -1,0 +1,10 @@
+continue-on-failure = true
+headers = { X-Period = "202401", X-Folio = "FOLIO-001", X-Rut = "18.979.569-6" }
+
+[generation]
+max-examples = 5
+
+[phases]
+enabled = false
+examples.enabled = true
+coverage.enabled = false

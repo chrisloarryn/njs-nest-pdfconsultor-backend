@@ -1,0 +1,467 @@
+name: Validate
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    outputs:
+      unit_tests: ${{ steps.publish-summary.outputs.unit_tests }}
+      unit_failed: ${{ steps.publish-summary.outputs.unit_failed }}
+      unit_duration_seconds: ${{ steps.publish-summary.outputs.unit_duration_seconds }}
+      e2e_tests: ${{ steps.publish-summary.outputs.e2e_tests }}
+      e2e_failed: ${{ steps.publish-summary.outputs.e2e_failed }}
+      e2e_duration_seconds: ${{ steps.publish-summary.outputs.e2e_duration_seconds }}
+      total_tests: ${{ steps.publish-summary.outputs.total_tests }}
+      total_failed: ${{ steps.publish-summary.outputs.total_failed }}
+      total_duration_seconds: ${{ steps.publish-summary.outputs.total_duration_seconds }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js 25.8.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 25.8.0
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Prepare test artifacts
+        run: |
+          rm -rf artifacts/test
+          mkdir -p artifacts/test
+
+      - name: Run unit tests
+        id: run-unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          yarn test:ci 2>&1 | tee artifacts/test/vitest.log
+          exit_code=${PIPESTATUS[0]}
+          echo "exit_code=${exit_code}" >> "$GITHUB_OUTPUT"
+
+      - name: Run e2e tests
+        id: run-e2e
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          yarn test:e2e:ci 2>&1 | tee artifacts/test/jest-e2e.log
+          exit_code=${PIPESTATUS[0]}
+          echo "exit_code=${exit_code}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish test summary
+        id: publish-summary
+        if: always()
+        run: |
+          python3 .github/scripts/publish_validation_summary.py tests \
+            --vitest-json artifacts/test/vitest.json \
+            --jest-json artifacts/test/jest-e2e.json \
+            --summary-file "$GITHUB_STEP_SUMMARY" \
+            --output-file "$GITHUB_OUTPUT"
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: artifacts/test
+          if-no-files-found: ignore
+
+      - name: Fail if tests failed
+        if: always() && (steps.run-unit.outputs.exit_code != '0' || steps.run-e2e.outputs.exit_code != '0')
+        run: exit 1
+
+  coverage-quality-gate:
+    runs-on: ubuntu-latest
+    needs: tests
+    outputs:
+      line_coverage_pct: ${{ steps.publish-summary.outputs.line_coverage_pct }}
+      covered_lines: ${{ steps.publish-summary.outputs.covered_lines }}
+      missed_lines: ${{ steps.publish-summary.outputs.missed_lines }}
+      coverage_threshold_pct: ${{ steps.publish-summary.outputs.coverage_threshold_pct }}
+      gate_passed: ${{ steps.publish-summary.outputs.gate_passed }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js 25.8.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 25.8.0
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Prepare coverage artifacts
+        run: |
+          rm -rf artifacts/coverage coverage
+          mkdir -p artifacts/coverage
+
+      - name: Run coverage
+        id: run-coverage
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          yarn coverage:ci 2>&1 | tee artifacts/coverage/coverage.log
+          exit_code=${PIPESTATUS[0]}
+          echo "exit_code=${exit_code}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish coverage summary
+        id: publish-summary
+        if: always()
+        run: |
+          python3 .github/scripts/publish_validation_summary.py coverage \
+            --coverage-json coverage/coverage-summary.json \
+            --minimum-ratio 90 \
+            --summary-file "$GITHUB_STEP_SUMMARY" \
+            --output-file "$GITHUB_OUTPUT"
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            artifacts/coverage
+            coverage
+          if-no-files-found: ignore
+
+      - name: Fail if coverage gate failed
+        if: always() && (steps.run-coverage.outputs.exit_code != '0' || steps.publish-summary.outputs.gate_passed != 'true')
+        run: exit 1
+
+  contract-tests:
+    runs-on: ubuntu-latest
+    needs: tests
+    outputs:
+      contract_tests: ${{ steps.publish-summary.outputs.contract_tests }}
+      contract_failures: ${{ steps.publish-summary.outputs.contract_failures }}
+      contract_errors: ${{ steps.publish-summary.outputs.contract_errors }}
+      contract_skipped: ${{ steps.publish-summary.outputs.contract_skipped }}
+      contract_duration_seconds: ${{ steps.publish-summary.outputs.contract_duration_seconds }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js 25.8.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 25.8.0
+          cache: yarn
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+          python3 -m pip install --upgrade pip
+          python3 -m pip install "schemathesis~=4.0"
+
+      - name: Run Schemathesis contract tests
+        id: run-tests
+        continue-on-error: true
+        shell: bash
+        env:
+          DATABASE_DRIVER: pg-mem
+          GLOBAL_PREFIX: cartolab
+          LOG_LEVEL: error
+          NODE_ENV: test
+          OPENAPI_OUTPUT: artifacts/contract/openapi.json
+          PORT: '3000'
+          POSTGRES_DB: pdfconsultor
+          POSTGRES_HOST: localhost
+          POSTGRES_LOGGING: 'false'
+          POSTGRES_PASS: postgres
+          POSTGRES_PORT: '5432'
+          POSTGRES_SYNCHRONIZE: 'true'
+          POSTGRES_USER: postgres
+          SWAGGER_CONTACT_EMAIL: arquitectura@example.com
+          SWAGGER_CONTACT_NAME: Arquitectura
+          SWAGGER_DESCRIPTION: API para consulta de cartolas PDF
+          SWAGGER_NAME: PDF Consultor API
+          SWAGGER_URL: api-docs
+          SWAGGER_VERSION: 1.0.0
+        run: |
+          rm -rf artifacts/contract dist
+          mkdir -p artifacts/contract
+
+          cleanup() {
+            if [ -n "${SERVER_PID:-}" ] && kill -0 "$SERVER_PID" 2>/dev/null; then
+              kill "$SERVER_PID"
+              wait "$SERVER_PID" || true
+            fi
+          }
+
+          trap cleanup EXIT
+          status=0
+
+          yarn build 2>&1 | tee artifacts/contract/build.log || status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "exit_code=${status}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          yarn openapi:export --output "$OPENAPI_OUTPUT" 2>&1 | tee artifacts/contract/openapi-export.log || status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "exit_code=${status}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          python3 -m json.tool "$OPENAPI_OUTPUT" >/dev/null || status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "exit_code=${status}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          yarn start:ci > artifacts/contract/server.log 2>&1 &
+          SERVER_PID=$!
+
+          ready=0
+          for attempt in $(seq 1 30); do
+            if curl -fsS "http://127.0.0.1:${PORT}/cartolab/health" >/dev/null; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$ready" -ne 1 ]; then
+            echo "Server did not become ready for contract testing." | tee artifacts/contract/schemathesis.log
+            echo "exit_code=1" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          set -o pipefail
+          schemathesis --config-file ./test/contract/schemathesis.toml run "$OPENAPI_OUTPUT" \
+            --url "http://127.0.0.1:${PORT}" \
+            --report-junit-path artifacts/contract/schemathesis.junit.xml 2>&1 | tee artifacts/contract/schemathesis.log
+          status=${PIPESTATUS[0]}
+          echo "exit_code=${status}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish contract summary
+        id: publish-summary
+        if: always()
+        run: |
+          python3 .github/scripts/publish_validation_summary.py contract \
+            --junit-xml artifacts/contract/schemathesis.junit.xml \
+            --summary-file "$GITHUB_STEP_SUMMARY" \
+            --output-file "$GITHUB_OUTPUT"
+
+      - name: Upload contract report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-report
+          path: artifacts/contract
+          if-no-files-found: ignore
+
+      - name: Fail if contract tests failed
+        if: always() && steps.run-tests.outputs.exit_code != '0'
+        run: exit 1
+
+  performance-tests:
+    runs-on: ubuntu-latest
+    needs: tests
+    outputs:
+      requests_total: ${{ steps.publish-summary.outputs.requests_total }}
+      failed_rate_pct: ${{ steps.publish-summary.outputs.failed_rate_pct }}
+      checks_pass_rate_pct: ${{ steps.publish-summary.outputs.checks_pass_rate_pct }}
+      avg_ms: ${{ steps.publish-summary.outputs.avg_ms }}
+      health_p95_ms: ${{ steps.publish-summary.outputs.health_p95_ms }}
+      bank_p95_ms: ${{ steps.publish-summary.outputs.bank_p95_ms }}
+      bank_p99_ms: ${{ steps.publish-summary.outputs.bank_p99_ms }}
+      throughput_rps: ${{ steps.publish-summary.outputs.throughput_rps }}
+      thresholds_failed: ${{ steps.publish-summary.outputs.thresholds_failed }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js 25.8.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 25.8.0
+          cache: yarn
+
+      - name: Install k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run k6 performance tests
+        id: run-tests
+        continue-on-error: true
+        shell: bash
+        env:
+          BASE_URL: http://127.0.0.1:3000
+          DATABASE_DRIVER: pg-mem
+          GLOBAL_PREFIX: cartolab
+          K6_SUMMARY_PATH: artifacts/performance/k6-summary.json
+          LOG_LEVEL: error
+          NODE_ENV: test
+          PORT: '3000'
+          POSTGRES_DB: pdfconsultor
+          POSTGRES_HOST: localhost
+          POSTGRES_LOGGING: 'false'
+          POSTGRES_PASS: postgres
+          POSTGRES_PORT: '5432'
+          POSTGRES_SYNCHRONIZE: 'true'
+          POSTGRES_USER: postgres
+          SWAGGER_CONTACT_EMAIL: arquitectura@example.com
+          SWAGGER_CONTACT_NAME: Arquitectura
+          SWAGGER_DESCRIPTION: API para consulta de cartolas PDF
+          SWAGGER_NAME: PDF Consultor API
+          SWAGGER_URL: api-docs
+          SWAGGER_VERSION: 1.0.0
+        run: |
+          rm -rf artifacts/performance dist
+          mkdir -p artifacts/performance
+
+          cleanup() {
+            if [ -n "${SERVER_PID:-}" ] && kill -0 "$SERVER_PID" 2>/dev/null; then
+              kill "$SERVER_PID"
+              wait "$SERVER_PID" || true
+            fi
+          }
+
+          trap cleanup EXIT
+          status=0
+
+          yarn build 2>&1 | tee artifacts/performance/build.log || status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "exit_code=${status}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          yarn start:ci > artifacts/performance/server.log 2>&1 &
+          SERVER_PID=$!
+
+          ready=0
+          for attempt in $(seq 1 30); do
+            if curl -fsS "${BASE_URL}/cartolab/health" >/dev/null; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$ready" -ne 1 ]; then
+            echo "Server did not become ready for performance testing." | tee artifacts/performance/k6.log
+            echo "exit_code=1" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          set -o pipefail
+          yarn perf:ci 2>&1 | tee artifacts/performance/k6.log
+          status=${PIPESTATUS[0]}
+          echo "exit_code=${status}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish performance summary
+        id: publish-summary
+        if: always()
+        run: |
+          python3 .github/scripts/publish_validation_summary.py performance \
+            --summary-json artifacts/performance/k6-summary.json \
+            --summary-file "$GITHUB_STEP_SUMMARY" \
+            --output-file "$GITHUB_OUTPUT"
+
+      - name: Upload performance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: artifacts/performance
+          if-no-files-found: ignore
+
+      - name: Fail if performance tests failed
+        if: always() && steps.run-tests.outputs.exit_code != '0'
+        run: exit 1
+
+  validation-summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - tests
+      - coverage-quality-gate
+      - contract-tests
+      - performance-tests
+
+    steps:
+      - name: Publish workflow summary
+        env:
+          TESTS_RESULT: ${{ needs.tests.result }}
+          TESTS_TOTAL: ${{ needs.tests.outputs.total_tests }}
+          TESTS_FAILED: ${{ needs.tests.outputs.total_failed }}
+          TESTS_DURATION: ${{ needs.tests.outputs.total_duration_seconds }}
+          COVERAGE_RESULT: ${{ needs.coverage-quality-gate.result }}
+          COVERAGE_PCT: ${{ needs.coverage-quality-gate.outputs.line_coverage_pct }}
+          COVERAGE_THRESHOLD_PCT: ${{ needs.coverage-quality-gate.outputs.coverage_threshold_pct }}
+          COVERAGE_COVERED_LINES: ${{ needs.coverage-quality-gate.outputs.covered_lines }}
+          COVERAGE_MISSED_LINES: ${{ needs.coverage-quality-gate.outputs.missed_lines }}
+          CONTRACT_RESULT: ${{ needs.contract-tests.result }}
+          CONTRACT_TESTS: ${{ needs.contract-tests.outputs.contract_tests }}
+          CONTRACT_FAILURES: ${{ needs.contract-tests.outputs.contract_failures }}
+          CONTRACT_ERRORS: ${{ needs.contract-tests.outputs.contract_errors }}
+          CONTRACT_DURATION: ${{ needs.contract-tests.outputs.contract_duration_seconds }}
+          PERFORMANCE_RESULT: ${{ needs.performance-tests.result }}
+          PERFORMANCE_REQUESTS: ${{ needs.performance-tests.outputs.requests_total }}
+          PERFORMANCE_FAILED_RATE: ${{ needs.performance-tests.outputs.failed_rate_pct }}
+          PERFORMANCE_CHECKS_RATE: ${{ needs.performance-tests.outputs.checks_pass_rate_pct }}
+          PERFORMANCE_AVG_MS: ${{ needs.performance-tests.outputs.avg_ms }}
+          PERFORMANCE_HEALTH_P95_MS: ${{ needs.performance-tests.outputs.health_p95_ms }}
+          PERFORMANCE_BANK_P95_MS: ${{ needs.performance-tests.outputs.bank_p95_ms }}
+          PERFORMANCE_BANK_P99_MS: ${{ needs.performance-tests.outputs.bank_p99_ms }}
+          PERFORMANCE_TPUT: ${{ needs.performance-tests.outputs.throughput_rps }}
+          PERFORMANCE_THRESHOLDS_FAILED: ${{ needs.performance-tests.outputs.thresholds_failed }}
+        shell: bash
+        run: |
+          status_label() {
+            case "$1" in
+              success) echo "PASS" ;;
+              failure) echo "FAIL" ;;
+              skipped) echo "SKIPPED" ;;
+              cancelled) echo "CANCELLED" ;;
+              *) echo "UNKNOWN" ;;
+            esac
+          }
+
+          {
+            echo "## Validation Summary"
+            echo ""
+            echo "| Stage | Result | Highlights |"
+            echo "| --- | --- | --- |"
+            echo "| Tests | $(status_label "${TESTS_RESULT}") | tests=${TESTS_TOTAL:-n/a}, failed=${TESTS_FAILED:-n/a}, duration=${TESTS_DURATION:-n/a}s |"
+            echo "| Coverage quality gate | $(status_label "${COVERAGE_RESULT}") | line coverage=${COVERAGE_PCT:-n/a}%, threshold=${COVERAGE_THRESHOLD_PCT:-n/a}%, covered=${COVERAGE_COVERED_LINES:-n/a}, missed=${COVERAGE_MISSED_LINES:-n/a} |"
+            echo "| Schemathesis contracts | $(status_label "${CONTRACT_RESULT}") | tests=${CONTRACT_TESTS:-n/a}, failures=${CONTRACT_FAILURES:-n/a}, errors=${CONTRACT_ERRORS:-n/a}, duration=${CONTRACT_DURATION:-n/a}s |"
+            echo "| k6 performance | $(status_label "${PERFORMANCE_RESULT}") | requests=${PERFORMANCE_REQUESTS:-n/a}, failed rate=${PERFORMANCE_FAILED_RATE:-n/a}%, checks=${PERFORMANCE_CHECKS_RATE:-n/a}%, avg=${PERFORMANCE_AVG_MS:-n/a}ms, health p95=${PERFORMANCE_HEALTH_P95_MS:-n/a}ms, bank p95=${PERFORMANCE_BANK_P95_MS:-n/a}ms, bank p99=${PERFORMANCE_BANK_P99_MS:-n/a}ms, throughput=${PERFORMANCE_TPUT:-n/a}rps, failed thresholds=${PERFORMANCE_THRESHOLDS_FAILED:-n/a} |"
+            echo ""
+            echo "Artifacts:"
+            echo "- \`test-report\`"
+            echo "- \`coverage-report\`"
+            echo "- \`contract-report\`"
+            echo "- \`performance-report\`"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -13,18 +13,23 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default [
   {
     ignores: [
+      '.DS_Store',
       'coverage/**',
       'dist/**',
       'node_modules/**',
       '.husky/**',
+      '.eslintrc.js',
       'env/**',
       '*.xml',
+      'eslint-report.json',
       '.prettierrc.js',
       'commitlint.config.js',
       'setupFile.ts',
+      'sonarqube-scanner.ts',
       'test/jest-e2e.config.ts',
       'test/setup-e2e.ts',
       'vitest.config.ts',
+      'webpack-hmr.config.js',
       'src/api/**',
       'src/config/**',
     ],
@@ -90,6 +95,15 @@ export default [
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+    },
+  },
+  {
+    files: ['test/performance/**/*.js'],
+    languageOptions: {
+      globals: {
+        __ENV: 'readonly',
+        __ITER: 'readonly',
+      },
     },
   },
 ];

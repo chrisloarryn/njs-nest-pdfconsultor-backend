@@ -25,10 +25,10 @@ export class BankStatementsController {
 
 	@Get('pdf')
 	@ApiOperation({ summary: 'Obtiene cartolas PDF por combinaciones de periodo, rut y folio.' })
-	@ApiHeader({ name: 'X-Folio', required: false, description: 'Folio de la cartola.' })
-	@ApiHeader({ name: 'X-Period', required: false, description: 'Periodo de la cartola.' })
-	@ApiHeader({ name: 'X-Rut', required: false, description: 'Rut del titular.' })
-	@ApiQuery({ name: 'b64', required: false, type: Boolean })
+	@ApiHeader({ name: 'X-Folio', required: false, description: 'Folio de la cartola.', example: 'FOLIO-001' })
+	@ApiHeader({ name: 'X-Period', required: false, description: 'Periodo de la cartola.', example: '202401' })
+	@ApiHeader({ name: 'X-Rut', required: false, description: 'Rut del titular.', example: '18.979.569-6' })
+	@ApiQuery({ name: 'b64', required: false, type: Boolean, example: false })
 	@ApiOkResponse({ type: BankStatementResponseDto, isArray: true })
 	getBankStatements(
 		@Headers('x-folio') folio: string | undefined,

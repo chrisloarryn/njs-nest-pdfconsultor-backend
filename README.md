@@ -1,22 +1,25 @@
 # njs-nest-pdfconsultor-backend
 
-Microservicio NestJS para consultar cartolas PDF almacenadas en PostgreSQL.
+Servicio NestJS para consultar cartolas PDF, modernizado a Node `25.8.0`, con estructura hexagonal y pipeline `Validate` en GitHub Actions.
 
 ## Resumen
 
 - Runtime: Node `25.8.0`
 - Package manager: Yarn `1.22.22`
 - Framework: NestJS `11`
-- Persistencia: TypeORM `0.3` + PostgreSQL
-- Tests:
+- Persistencia: TypeORM `0.3` con `postgres` o `pg-mem`
+- Testing:
   - Vitest para unitarias
   - Jest + Supertest para e2e
+  - Schemathesis para contrato OpenAPI
+  - k6 para performance
 - Arquitectura: hexagonal
 
 ## Estructura
 
 ```text
 src
+├── ci
 ├── modules
 │   ├── bank-statements
 │   │   ├── application
@@ -24,28 +27,25 @@ src
 │   │   ├── infrastructure
 │   │   └── presentation
 │   └── health
-└── shared
-    ├── domain
-    ├── infrastructure
-    ├── presentation
-    └── testing
+├── shared
+│   ├── domain
+│   ├── infrastructure
+│   ├── presentation
+│   └── testing
+└── types
 ```
 
-### Criterio de capas
+Capas:
 
 - `domain`: modelos y puertos
 - `application`: casos de uso
-- `infrastructure`: adapters concretos de DB, logging y PDF
+- `infrastructure`: adapters de DB, logging y PDF
 - `presentation`: controllers, DTOs, pipes y filtros
+- `ci`: bootstrap, seed y export OpenAPI para validaciones automatizadas
 
 ## Endpoints
 
-### Health
-
 - `GET /<GLOBAL_PREFIX>/health`
-
-### Bank statements
-
 - `GET /<GLOBAL_PREFIX>/bank-statements/pdf`
 
 Headers soportados:
@@ -58,7 +58,7 @@ Query soportado:
 
 - `b64=true|false`
 
-### Reglas de búsqueda
+Reglas de búsqueda:
 
 - `period + folio`
 - `rut`
@@ -116,10 +116,10 @@ SWAGGER_CONTACT_EMAIL=arquitectura@example.com
 
 Notas:
 
-- Para e2e se usa `DATABASE_DRIVER=pg-mem`.
+- Para e2e y CI se usa `DATABASE_DRIVER=pg-mem`.
 - En ambientes no productivos Swagger queda disponible en `/<GLOBAL_PREFIX>/<SWAGGER_URL>`.
 
-## NVM
+## Node y NVM
 
 El repo fija Node en `.nvmrc`:
 
@@ -127,7 +127,7 @@ El repo fija Node en `.nvmrc`:
 25.8.0
 ```
 
-El entorno local quedó alineado con:
+Alineación local recomendada:
 
 ```bash
 nvm install 25.8.0
@@ -143,27 +143,84 @@ yarn install
 
 ## Ejecución local
 
+Servidor en desarrollo:
+
 ```bash
 yarn start:dev
 ```
 
+Servidor CI-like con `pg-mem` y seed:
+
+```bash
+yarn start:ci
+```
+
 ## Scripts
+
+Base:
 
 ```bash
 yarn lint
+yarn build
 yarn test
 yarn test:e2e
-yarn build
 yarn coverage
 ```
 
-## Verificación actual
+CI y validaciones:
 
-Estado validado en esta modernización:
+```bash
+yarn test:ci
+yarn test:e2e:ci
+yarn coverage:ci
+yarn seed:ci
+yarn openapi:export
+yarn perf:ci
+```
+
+Notas:
+
+- `yarn openapi:export` genera el `openapi.json` usado por las pruebas de contrato.
+- `yarn perf:ci` requiere `k6` instalado localmente.
+- Las pruebas de contrato en CI usan Schemathesis sobre la spec OpenAPI exportada.
+
+## Workflow Validate
+
+El repo usa [`.github/workflows/validate.yml`](/Users/cristobalcontreras/GitHub/CLA/njs-nest-cartolas-pdf-consultor/.github/workflows/validate.yml) como pipeline principal en GitHub Actions.
+
+Jobs:
+
+- `tests`: Vitest + Jest e2e con artifacts
+- `coverage-quality-gate`: cobertura con gate bloqueante al `90%`
+- `contract-tests`: export OpenAPI + server local + Schemathesis
+- `performance-tests`: server local + k6
+- `validation-summary`: resumen final con métricas y artifacts
+
+Artifacts publicados:
+
+- `test-report`
+- `coverage-report`
+- `contract-report`
+- `performance-report`
+
+## Verificación local realizada
+
+Validado sobre Node `25.8.0`:
 
 - `yarn lint`
-- `yarn test`
-- `yarn test:e2e`
 - `yarn build`
+- `yarn test:run`
+- `yarn test:e2e`
+- `yarn test:ci`
+- `yarn coverage:ci`
+- `yarn seed:ci`
+- `yarn openapi:export`
+- Schemathesis contra servidor local
+- `k6` contra `/cartolab/health` y `/cartolab/bank-statements/pdf`
 
-La cobertura unitaria actual quedó sobre 84%.
+Estado actual de cobertura:
+
+- líneas: `84.44%`
+- statements: `84%`
+
+El workflow `Validate` deja el gate en `90%`, por lo que hoy la etapa de cobertura queda roja hasta ampliar la suite.
