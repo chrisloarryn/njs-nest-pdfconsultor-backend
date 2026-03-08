@@ -1,19 +1,21 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "rootDir": "./",
-    "declaration": false,
-    "removeComments": true,
-    "sourceMap": false,
-    "incremental": false
-  },
-  "exclude": [
-    "node_modules",
-    "coverage",
-    "test",
-    "build",
-    "dist",
-    "**/*spec.ts",
-    "**/*mocks.ts"
-  ]
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"rootDir": "./",
+		"declaration": false,
+		"sourceMap": false,
+		"incremental": false
+	},
+	"exclude": [
+		"node_modules",
+		"coverage",
+		"test",
+		"build",
+		"dist",
+		"src/api/**",
+		"src/config/**",
+		"**/*.spec.ts",
+		"**/*.e2e-spec.ts",
+		"src/shared/testing/**"
+	]
 }

@@ -1,4 +1,2 @@
-import { beforeAll } from 'vitest';
-
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-beforeAll(() => {});
+process.env.LOG_LEVEL ??= 'error';
+process.env.GLOBAL_PREFIX ??= 'cartolab';

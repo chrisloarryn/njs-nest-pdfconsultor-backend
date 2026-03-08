@@ -3,37 +3,24 @@
 		"module": "commonjs",
 		"declaration": true,
 		"removeComments": true,
-		"allowJs": true,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"allowSyntheticDefaultImports": true,
-		"target": "es2017",
-		"sourceMap": false,
+		"esModuleInterop": true,
+		"target": "ES2023",
+		"moduleResolution": "node",
+		"sourceMap": true,
 		"outDir": "./dist",
 		"baseUrl": "./",
 		"incremental": true,
 		"strict": true,
 		"strictPropertyInitialization": false,
-		// no check node_modules
 		"skipLibCheck": true,
-		"esModuleInterop": true,
-		"types": [
-			"vitest/globals",
-			"jest"
-		],
-		"typeRoots": [
-			"node_modules/@types",
-			"src/api/types",
-			"vitest/globals",
-			"vitest/types",
-		],
+		"types": ["node"],
 		"paths": {
-			"@ccla/*": [
-				"src/*"
-			],
-			"@cclatest/*": [
-				"test/*"
-			]
+			"@/*": ["src/*"]
 		}
-	}
+	},
+	"include": ["src/**/*.ts", "src/**/*.d.ts"],
+	"exclude": ["node_modules", "dist", "coverage", "test", "src/api/**", "src/config/**"]
 }
