@@ -1,4 +1,4 @@
-FROM node:25.8.0-alpine AS builder
+FROM node:25.8.2-alpine AS builder
 
 WORKDIR /usr/src/app
 
@@ -14,7 +14,7 @@ ENV NODE_ENV=${APP_ENV}
 
 RUN yarn lint && yarn test && yarn build
 
-FROM node:25.8.0-alpine
+FROM node:25.8.2-alpine
 
 WORKDIR /usr/src/app
 
