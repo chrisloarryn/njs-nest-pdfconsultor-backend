@@ -39,7 +39,7 @@
 		"@google-cloud/logging-winston": "^6.0.1",
 		"@nestjs/common": "^11.1.16",
 		"@nestjs/config": "^4.0.3",
-		"@nestjs/core": "^11.1.16",
+		"@nestjs/core": "^11.1.18",
 		"@nestjs/mapped-types": "^2.1.0",
 		"@nestjs/platform-express": "^11.1.16",
 		"@nestjs/swagger": "^11.2.6",
